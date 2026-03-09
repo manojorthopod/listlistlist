@@ -9,6 +9,7 @@ import {
   TOPUP_CREDITS,
 } from '@/lib/stripe'
 import { db, updateUser, createTopupPurchase, applyMonthlyRollover } from '@/lib/db'
+import type { TopupPackId } from '@/types'
 
 // Stripe requires the raw body for signature verification — no JSON parsing
 export const dynamic = 'force-dynamic'
@@ -39,7 +40,7 @@ function getInvoiceSubscriptionId(invoice: Stripe.Invoice): string | null {
 
 export async function POST(req: Request) {
   const body      = await req.text()
-  const signature = headers().get('stripe-signature')
+  const signature = (await headers()).get('stripe-signature')
 
   if (!signature) {
     return new Response('Missing stripe-signature header', { status: 400 })
@@ -107,7 +108,7 @@ export async function POST(req: Request) {
 
         // ── mode: payment (top-up pack purchase) ────────────────────────────
         if (session.mode === 'payment') {
-          const packId = session.metadata?.packId as keyof typeof TOPUP_CREDITS | undefined
+          const packId = session.metadata?.packId as TopupPackId | undefined
           if (!packId) {
             console.error('[stripe webhook] No packId on payment checkout session')
             break
@@ -119,6 +120,31 @@ export async function POST(req: Request) {
             break
           }
 
+          const paymentIntentId =
+            typeof session.payment_intent === 'string'
+              ? session.payment_intent
+              : (session.payment_intent as Stripe.PaymentIntent | null)?.id ?? ''
+
+          // ── Idempotency guard ────────────────────────────────────────────
+          // Stripe may replay webhook events (network timeouts, retries).
+          // Check whether this payment intent has already been processed to
+          // prevent double-crediting.
+          if (paymentIntentId) {
+            const { data: alreadyProcessed } = await db
+              .from('topup_purchases')
+              .select('id')
+              .eq('stripe_payment_intent_id', paymentIntentId)
+              .maybeSingle()
+
+            if (alreadyProcessed) {
+              console.log(
+                `[stripe webhook] Duplicate payment event ${paymentIntentId} — skipping`
+              )
+              break
+            }
+          }
+
+          // Fetch current balance and add credits
           const { data: user } = await db
             .from('users')
             .select('topup_credits')
@@ -131,15 +157,10 @@ export async function POST(req: Request) {
             })
           }
 
-          const paymentIntentId =
-            typeof session.payment_intent === 'string'
-              ? session.payment_intent
-              : (session.payment_intent as Stripe.PaymentIntent | null)?.id ?? ''
-
           await createTopupPurchase({
             user_id:                  userId,
             stripe_payment_intent_id: paymentIntentId,
-            pack_name:                packId as any,
+            pack_name:                packId,
             credits_purchased:        credits,
             amount_paid:              session.amount_total ?? 0,
           })
