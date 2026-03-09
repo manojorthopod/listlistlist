@@ -25,6 +25,21 @@ function getPeriodEnd(subscription: Stripe.Subscription): number | null {
   return subscription.items.data[0]?.current_period_end ?? null
 }
 
+/**
+ * Advances a date by exactly one calendar month.
+ * Handles end-of-month edge cases: e.g. Jan 31 → Feb 28 (not March 2/3).
+ */
+function addOneMonth(date: Date): Date {
+  const result = new Date(date)
+  const day    = result.getDate()
+  result.setMonth(result.getMonth() + 1)
+  // If the day overflowed (e.g. Jan 31 → Mar 3), clamp to last day of target month
+  if (result.getDate() !== day) {
+    result.setDate(0) // day 0 = last day of the previous month
+  }
+  return result
+}
+
 /** Invoice.subscription moved to invoice.parent.subscription_details.subscription */
 function getInvoiceSubscriptionId(invoice: Stripe.Invoice): string | null {
   const parent = invoice.parent as (Stripe.Invoice.Parent & {
@@ -224,43 +239,136 @@ export async function POST(req: Request) {
       }
 
       // ── invoice.paid (monthly / annual renewal) ────────────────────────────
+      //
+      // This event fires for every paid invoice, including:
+      //   subscription_create  — first invoice (credits already set in checkout.session.completed)
+      //   subscription_cycle   — regular renewal ← the only case we roll over credits
+      //   subscription_update  — prorated plan change invoice ← skip
+      //   manual               — admin-created ← skip
+      //
+      // Annual billing detail: Stripe fires subscription_cycle once per YEAR for
+      // annual subscribers. Monthly credit grants for months 2-12 of an annual
+      // billing period are handled by the /api/cron/credit-rollover route, which
+      // runs monthly and processes users whose credits_reset_at has passed.
+      // This handler sets credits_reset_at to ONE MONTH from now (not one year),
+      // so the cron picks it up on the correct monthly cadence.
       case 'invoice.paid': {
         const invoice = event.data.object as Stripe.Invoice
 
-        // Only process subscription renewal cycles
-        if (invoice.billing_reason !== 'subscription_cycle') break
+        // Only process subscription renewal cycles (not creates, updates, or manual)
+        if (invoice.billing_reason !== 'subscription_cycle') {
+          console.log(
+            `[stripe webhook] invoice.paid skipped — billing_reason: ${invoice.billing_reason}`
+          )
+          break
+        }
 
+        // ── 1. Resolve subscription and confirm it is still active in Stripe ──
+        const subscriptionId = getInvoiceSubscriptionId(invoice)
+        if (!subscriptionId) {
+          console.error('[stripe webhook] invoice.paid: could not extract subscription ID')
+          break
+        }
+
+        const subscription = await stripe.subscriptions.retrieve(subscriptionId, {
+          expand: ['items.data.price'],
+        })
+
+        // If the subscription was cancelled in Stripe before this invoice fired
+        // (can happen with end-of-period cancellations), skip rollover.
+        if (subscription.status !== 'active' && subscription.status !== 'trialing') {
+          console.log(
+            `[stripe webhook] invoice.paid: subscription ${subscriptionId} status is ` +
+            `"${subscription.status}" — skipping rollover`
+          )
+          break
+        }
+
+        // ── 2. Derive plan and billing interval from the live subscription ─────
+        // We read this from the Stripe subscription, not from our DB, so a
+        // concurrent subscription.deleted event cannot produce stale data.
+        const priceId  = subscription.items.data[0]?.price.id
+        const plan     = planFromPriceId(priceId)
+        const interval = intervalFromPriceId(priceId)
+
+        if (!plan) {
+          console.error('[stripe webhook] invoice.paid: unknown price ID', priceId)
+          break
+        }
+
+        // ── 3. Find the user in our DB ─────────────────────────────────────────
         const customerId = invoice.customer as string
         const { data: user } = await db
           .from('users')
-          .select('id, subscription_status')
+          .select('id, subscription_status, credits_reset_at')
           .eq('stripe_customer_id', customerId)
           .single()
 
         if (!user) {
-          console.error('[stripe webhook] No user found for customer', customerId)
+          console.error('[stripe webhook] invoice.paid: no user for customer', customerId)
           break
         }
 
-        const plan = user.subscription_status as 'starter' | 'pro'
-        if (plan !== 'starter' && plan !== 'pro') break
+        // If our DB already shows the user as cancelled (e.g. subscription.deleted
+        // fired first), skip rollover — no point crediting a cancelled account.
+        if (user.subscription_status !== 'starter' && user.subscription_status !== 'pro') {
+          console.log(
+            `[stripe webhook] invoice.paid: user ${user.id} has status ` +
+            `"${user.subscription_status}" in DB — skipping rollover`
+          )
+          break
+        }
 
-        await applyMonthlyRollover(user.id, PLAN_CREDITS[plan], PLAN_ROLLOVER_CAP[plan])
+        // ── 4. Idempotency guard ───────────────────────────────────────────────
+        // Stripe can replay webhooks. Guard using invoice.effective_at: if
+        // credits_reset_at is already AFTER the invoice's effective date, the
+        // rollover for this cycle has already been applied — skip.
+        const invoiceEffectiveAt = (invoice as unknown as { effective_at?: number }).effective_at
+          ?? invoice.created  // fallback: use created timestamp if effective_at not present
+        const invoiceEffectiveMs = invoiceEffectiveAt * 1000
 
-        // Update next reset date from the subscription
-        const subscriptionId = getInvoiceSubscriptionId(invoice)
-        if (subscriptionId) {
-          const subscription = await stripe.subscriptions.retrieve(subscriptionId)
-          const periodEnd    = getPeriodEnd(subscription)
-          if (periodEnd) {
-            await updateUser(user.id, {
-              credits_reset_at: new Date(periodEnd * 1000).toISOString(),
-            })
+        if (user.credits_reset_at) {
+          const resetAt = new Date(user.credits_reset_at).getTime()
+          if (resetAt > invoiceEffectiveMs) {
+            console.log(
+              `[stripe webhook] invoice.paid: rollover already applied for user ${user.id} ` +
+              `(credits_reset_at ${user.credits_reset_at} > invoice effective ${new Date(invoiceEffectiveMs).toISOString()}) — skipping`
+            )
+            break
           }
         }
 
+        // ── 5. Apply rollover: subscription_credits = MIN(current + allowance, cap) ──
+        const result = await applyMonthlyRollover(
+          user.id,
+          PLAN_CREDITS[plan],
+          PLAN_ROLLOVER_CAP[plan]
+        )
+
+        // ── 6. Advance credits_reset_at ────────────────────────────────────────
+        // For MONTHLY billing: use the subscription's next period end (from Stripe).
+        // For ANNUAL billing: advance by exactly 1 calendar month, NOT 1 year.
+        //   This ensures the monthly cron job (/api/cron/credit-rollover) picks up
+        //   months 2-12 on the correct monthly cadence.
+        let nextResetAt: string
+
+        if (interval === 'monthly') {
+          const periodEnd = getPeriodEnd(subscription)
+          nextResetAt = periodEnd
+            ? new Date(periodEnd * 1000).toISOString()
+            : addOneMonth(new Date(invoiceEffectiveMs)).toISOString()
+        } else {
+          // Annual: advance from the invoice's effective date by 1 month
+          nextResetAt = addOneMonth(new Date(invoiceEffectiveMs)).toISOString()
+        }
+
+        await updateUser(user.id, { credits_reset_at: nextResetAt })
+
         console.log(
-          `[stripe webhook] Rollover applied for user ${user.id} (${plan}, +${PLAN_CREDITS[plan]} up to cap ${PLAN_ROLLOVER_CAP[plan]})`
+          `[stripe webhook] Rollover applied — user: ${user.id}, plan: ${plan}, ` +
+          `interval: ${interval}, +${PLAN_CREDITS[plan]} credits ` +
+          `(new balance: ${result.subscription_credits}, cap: ${PLAN_ROLLOVER_CAP[plan]}), ` +
+          `next reset: ${nextResetAt}`
         )
         break
       }
