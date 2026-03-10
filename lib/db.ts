@@ -121,13 +121,15 @@ export async function updateListing(
       | 'credits_used'
       | 'platforms'
     >
-  >
+  >,
+  // When ownerId is supplied the UPDATE is scoped to user_id = ownerId.
+  // If the listingId doesn't belong to that user the update affects 0 rows
+  // (silently, same as not found) — defense-in-depth against IDOR.
+  ownerId?: string
 ): Promise<void> {
-  const { error } = await db
-    .from('listings')
-    .update(updates)
-    .eq('id', listingId)
-
+  let query = db.from('listings').update(updates).eq('id', listingId)
+  if (ownerId) query = query.eq('user_id', ownerId)
+  const { error } = await query
   if (error) throw new Error(`Failed to update listing: ${error.message}`)
 }
 

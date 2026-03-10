@@ -2,12 +2,14 @@
 
 import { useReducer, useCallback, useRef, useEffect } from 'react'
 import { useAuth } from '@clerk/nextjs'
+import Link from 'next/link'
 import { ZapIcon, CoinsIcon } from 'lucide-react'
 import { UploadDropzone, type UploadedImage } from '@/components/upload-dropzone'
 import { ImageValidator } from '@/components/image-validator'
 import { ExtractionConfirmForm } from '@/components/extraction-confirm-form'
 import PlatformToggleCard from '@/components/platform-toggle-card'
 import ListingResultTabs, { type PlatformStateMap } from '@/components/listing-result-tabs'
+import CreditBadge from '@/components/credit-badge'
 import type {
   Platform,
   ExtractedProduct,
@@ -206,14 +208,17 @@ const STEP_ORDER: Step[] = STEPS.map((s) => s.id)
 function StepBar({ current }: { current: Step }) {
   const currentIdx = STEP_ORDER.indexOf(current)
   return (
-    <div className="flex items-center">
+    // overflow-x-auto prevents layout breaking on screens narrower than
+    // the full bar width; flex-shrink-0 on each item keeps dots from
+    // collapsing. Labels are hidden on xs and shown from sm upward.
+    <div className="flex items-center overflow-x-auto pb-1 -mb-1">
       {STEPS.map((s, i) => {
         const idx    = STEP_ORDER.indexOf(s.id)
         const done   = idx < currentIdx
         const active = idx === currentIdx
         const isLast = i === STEPS.length - 1
         return (
-          <div key={s.id} className="flex items-center">
+          <div key={s.id} className="flex items-center flex-shrink-0">
             <div className="flex flex-col items-center gap-1">
               <div
                 className={`
@@ -232,11 +237,13 @@ function StepBar({ current }: { current: Step }) {
                   i + 1
                 )}
               </div>
-              <span className={`text-xs ${active ? 'text-accent' : done ? 'text-text-secondary' : 'text-text-disabled'}`}>
+              {/* Labels hidden on xs to prevent overflow on 375px screens */}
+              <span className={`text-xs hidden sm:block ${active ? 'text-accent' : done ? 'text-text-secondary' : 'text-text-disabled'}`}>
                 {s.label}
               </span>
             </div>
-            {!isLast && <div className={`w-8 h-px mb-4 mx-1 ${done ? 'bg-accent' : 'bg-border'}`} />}
+            {/* Shorter connector on mobile, full width on sm+ */}
+            {!isLast && <div className={`w-4 sm:w-8 h-px mb-4 sm:mx-1 mx-0.5 ${done ? 'bg-accent' : 'bg-border'}`} />}
           </div>
         )
       })}
@@ -455,6 +462,23 @@ export default function GeneratePage() {
 
   return (
     <div className="min-h-screen bg-base">
+
+      {/* ── Navigation ──────────────────────────────────────────────────────── */}
+      <nav className="border-b border-border bg-surface sticky top-0 z-40">
+        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between gap-4">
+          <Link
+            href="/dashboard"
+            className="text-sm text-text-secondary hover:text-text-primary transition-colors duration-150 flex items-center gap-1.5 flex-shrink-0"
+          >
+            ← Dashboard
+          </Link>
+          <Link href="/" className="font-mono font-bold text-text-primary tracking-tight text-lg">
+            listlistlist
+          </Link>
+          <CreditBadge />
+        </div>
+      </nav>
+
       <div className="max-w-3xl mx-auto px-6 py-12 space-y-10">
 
         {/* Header */}
@@ -633,7 +657,8 @@ export default function GeneratePage() {
               initialData={state.extractedData}
               selectedPlatforms={state.selectedPlatforms}
               creditCost={state.selectedPlatforms.length}
-              availableCredits={state.subscriptionCredits + state.topupCredits}
+              subscriptionCredits={state.subscriptionCredits}
+              topupCredits={state.topupCredits}
               onConfirm={handleConfirm}
             />
           </div>

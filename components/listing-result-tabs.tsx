@@ -412,7 +412,7 @@ export default function ListingResultTabs({
 
       {/* Post-generation referral prompt */}
       {referralUrl && (
-        <div className="flex items-center justify-between gap-4 rounded-xl border border-border bg-surface p-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border border-border bg-surface p-5">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-lg bg-accent-muted flex items-center justify-center flex-shrink-0">
               <UsersIcon className="w-4 h-4 text-accent" />
@@ -422,7 +422,7 @@ export default function ListingResultTabs({
                 Your listings are ready!
               </p>
               <p className="text-xs text-text-secondary mt-0.5">
-                Know another seller who&apos;d love this? Earn 10 free credits for every referral.
+                Know another seller who&apos;d love this? Share listlistlist and earn 10 free credits →
               </p>
             </div>
           </div>
@@ -431,7 +431,7 @@ export default function ListingResultTabs({
             target="_blank"
             rel="noopener noreferrer"
             className="
-              flex-shrink-0 inline-flex items-center gap-1.5
+              self-start sm:self-auto flex-shrink-0 inline-flex items-center gap-1.5
               bg-accent hover:bg-accent-hover text-white
               px-4 py-2 rounded-lg text-sm font-semibold
               transition-colors duration-150

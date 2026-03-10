@@ -33,22 +33,22 @@
  * will skip all already-processed users.
  */
 
+import { timingSafeEqual } from 'crypto'
 import { db, applyMonthlyRollover, updateUser } from '@/lib/db'
 import { PLAN_CREDITS, PLAN_ROLLOVER_CAP } from '@/lib/stripe'
 
 // ─── Auth helper ──────────────────────────────────────────────────────────────
 
-function getCronSecret(): string {
-  const secret = process.env.CRON_SECRET
-  if (!secret) throw new Error('Missing CRON_SECRET environment variable')
-  return secret
-}
-
 function isCronAuthorised(req: Request): boolean {
-  const auth   = req.headers.get('authorization') ?? ''
-  const token  = auth.replace(/^Bearer\s+/i, '')
+  const secret = process.env.CRON_SECRET
+  if (!secret) return false
+  const auth  = req.headers.get('authorization') ?? ''
+  const token = auth.replace(/^Bearer\s+/i, '')
   try {
-    return token === getCronSecret()
+    // Use a constant-time comparison to prevent timing-based secret discovery
+    const a = Buffer.from(token)
+    const b = Buffer.from(secret)
+    return a.length === b.length && timingSafeEqual(a, b)
   } catch {
     return false
   }

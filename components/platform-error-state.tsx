@@ -21,14 +21,10 @@ export default function PlatformErrorState({
     <div className="rounded-xl border border-error bg-error-muted p-6 flex flex-col gap-4">
       <div className="flex items-start gap-3">
         <AlertCircleIcon className="w-5 h-5 text-error flex-shrink-0 mt-0.5" />
-        <div>
-          <p className="text-sm font-semibold text-error">
-            Something went wrong generating your {meta.label} listing
-          </p>
-          <p className="text-sm text-text-secondary mt-1">
-            Your credit has been refunded. You can try generating again for 1 credit.
-          </p>
-        </div>
+        <p className="text-sm text-error">
+          Something went wrong generating your {meta.label} listing — your credit has been
+          refunded. Try regenerating this platform.
+        </p>
       </div>
 
       <button
@@ -45,10 +41,7 @@ export default function PlatformErrorState({
       >
         {isRetrying ? (
           <>
-            <span
-              className="w-3.5 h-3.5 rounded-full border-2 border-current border-t-transparent animate-spin"
-              style={{ borderTopColor: 'transparent' }}
-            />
+            <span className="w-3.5 h-3.5 rounded-full border-2 border-current border-t-transparent animate-spin" />
             Retrying…
           </>
         ) : (

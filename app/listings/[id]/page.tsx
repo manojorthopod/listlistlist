@@ -15,9 +15,20 @@ export async function generateMetadata({
 }: {
   params: Promise<{ id: string }>
 }) {
+  // Always verify ownership before embedding any listing data in the <title>.
+  // Without this check, anyone who guesses a UUID could discover the product
+  // type of another user's listing from the HTML <title> tag.
+  const { userId } = await auth()
+  if (!userId) return { title: 'Listing — listlistlist' }
+
   const { id } = await params
   const listing = await getListingById(id)
-  const product = listing?.extracted_data?.product_type ?? 'Listing'
+
+  // Return a generic title for listings that don't belong to this user —
+  // treat forbidden the same as not-found to avoid information leakage.
+  if (!listing || listing.user_id !== userId) return { title: 'Listing — listlistlist' }
+
+  const product = listing.extracted_data?.product_type ?? 'Listing'
   return { title: `${product} — listlistlist` }
 }
 

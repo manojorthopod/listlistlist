@@ -1,24 +1,26 @@
 'use client'
 
 import { useState, useCallback, KeyboardEvent } from 'react'
-import { XIcon, PlusIcon, SlidersHorizontalIcon } from 'lucide-react'
+import { XIcon, SlidersHorizontalIcon } from 'lucide-react'
 import type { ExtractedProduct, Platform } from '@/types'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface ExtractionConfirmFormProps {
   /** Initial data returned by /api/extract */
-  initialData:       ExtractedProduct
+  initialData:         ExtractedProduct
   /** Selected platforms carried over from Step 1 */
-  selectedPlatforms: Platform[]
+  selectedPlatforms:   Platform[]
   /** Credit cost for the selected platforms */
-  creditCost:        number
-  /** User's total available credits */
-  availableCredits:  number
+  creditCost:          number
+  /** Monthly subscription credits remaining */
+  subscriptionCredits: number
+  /** Never-expiring top-up credits remaining */
+  topupCredits:        number
   /** Called when the user confirms and proceeds to generation */
-  onConfirm:         (data: ExtractedProduct, platforms: Platform[]) => void
+  onConfirm:           (data: ExtractedProduct, platforms: Platform[]) => void
   /** Disabled while generation is in-flight */
-  disabled?:         boolean
+  disabled?:           boolean
 }
 
 // ─── Subcomponents ────────────────────────────────────────────────────────────
@@ -131,10 +133,12 @@ export function ExtractionConfirmForm({
   initialData,
   selectedPlatforms,
   creditCost,
-  availableCredits,
+  subscriptionCredits,
+  topupCredits,
   onConfirm,
   disabled = false,
 }: ExtractionConfirmFormProps) {
+  const availableCredits = subscriptionCredits + topupCredits
   // ── Form state — mirrors ExtractedProduct ──────────────────────────────────
   const [productType,     setProductType]     = useState(initialData.product_type)
   const [material,        setMaterial]        = useState(initialData.material ?? '')
@@ -204,7 +208,7 @@ export function ExtractionConfirmForm({
           <h2 className="text-xl font-semibold text-text-primary">Confirm product details</h2>
         </div>
         <p className="text-text-secondary text-sm leading-relaxed">
-          Review what we extracted from your image. Edit anything that's wrong or missing
+          Review what we extracted from your image. Edit anything that&apos;s wrong or missing
           before generating — accurate data means better listings.
         </p>
       </div>
@@ -387,7 +391,7 @@ export function ExtractionConfirmForm({
                 : `This will use ${creditCost} credit${creditCost === 1 ? '' : 's'}`}
             </span>
             <span className="text-text-secondary text-sm font-mono">
-              {availableCredits} remaining
+              {subscriptionCredits} monthly · {topupCredits} top-up remaining
             </span>
           </div>
           <p className="text-text-secondary text-xs mt-1.5">

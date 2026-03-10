@@ -34,8 +34,37 @@ function checkRateLimit(userId: string): boolean {
 
 const PLATFORMS = ['amazon', 'etsy', 'ebay', 'shopify', 'woocommerce', 'tiktok'] as const
 
+// ─── imageUrl allowlist ───────────────────────────────────────────────────────
+// All legitimate images come from UploadThing CDN after the user uploads via
+// the UploadDropzone. Restricting to known UploadThing hostnames prevents users
+// from pointing the generation route at arbitrary external URLs to:
+//   (a) consume credits on images they didn't upload through the normal flow
+//   (b) use our API as a general-purpose image→listing service
+//
+// UploadThing CDN hostnames:
+//   utfs.io       — legacy CDN (still in use)
+//   *.ufs.sh      — newer per-app subdomain CDN
+const ALLOWED_IMAGE_HOSTS: ReadonlySet<string> = new Set(['utfs.io'])
+const ALLOWED_IMAGE_HOST_SUFFIXES: readonly string[] = ['.ufs.sh']
+
+function isAllowedImageUrl(rawUrl: string): boolean {
+  try {
+    const { protocol, hostname } = new URL(rawUrl)
+    if (protocol !== 'https:') return false
+    if (ALLOWED_IMAGE_HOSTS.has(hostname)) return true
+    return ALLOWED_IMAGE_HOST_SUFFIXES.some((suffix) => hostname.endsWith(suffix))
+  } catch {
+    return false
+  }
+}
+
 const BodySchema = z.object({
-  imageUrl:      z.string().url(),
+  imageUrl: z
+    .string()
+    .url()
+    .refine(isAllowedImageUrl, {
+      message: 'imageUrl must be an UploadThing CDN URL (utfs.io or *.ufs.sh)',
+    }),
   imageHash:     z.string().min(1),
   extractedData: z.object({
     product_type:       z.string(),
@@ -168,7 +197,7 @@ export async function POST(req: Request) {
     postDeductCredits = await spendCredits(userId, platforms.length)
   } catch {
     // Race condition — another request consumed the credits first
-    await updateListing(listingId, { status: 'failed' })
+    await updateListing(listingId, { status: 'failed' }, userId)
     return Response.json(
       { error: 'Insufficient credits — they may have been used by another session.' },
       { status: 402 }
@@ -225,7 +254,7 @@ export async function POST(req: Request) {
       generated_listings: generatedListings,
       status:             finalStatus,
       credits_used:       creditsUsed,
-    })
+    }, userId)
   } catch (err) {
     console.error('[api/generate] Failed to update listing after generation:', err)
     // Don't fail the response — the client has the data

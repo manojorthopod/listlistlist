@@ -324,7 +324,7 @@ export function UploadDropzone({ onUploadComplete, disabled = false }: UploadDro
             <AlertCircleIcon className="w-5 h-5 text-warning shrink-0 mt-0.5" />
             <div className="space-y-1">
               <p className="text-text-primary font-medium text-sm">
-                You've generated listings for this product before
+                You&apos;ve generated listings for this product before
               </p>
               <p className="text-text-secondary text-sm">
                 A listing was created on{' '}

@@ -1,5 +1,5 @@
 import Stripe from 'stripe'
-import type { BillingInterval, SubscriptionStatus, TopupPackId } from '@/types'
+import type { BillingInterval, TopupPackId } from '@/types'
 
 // ─── Client ───────────────────────────────────────────────────────────────────
 

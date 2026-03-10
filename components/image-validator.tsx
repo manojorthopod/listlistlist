@@ -124,7 +124,6 @@ export function ImageValidator({
   }
 
   const isValidating = state === 'validating'
-  const isFailed     = state === 'invalid' || state === 'error'
 
   return (
     <div className="space-y-4">
@@ -180,9 +179,11 @@ export function ImageValidator({
           <div className="flex items-start gap-3">
             <AlertCircleIcon className="w-5 h-5 text-error shrink-0 mt-0.5" />
             <div className="space-y-1">
-              <p className="text-text-primary font-medium text-sm">
-                We couldn't identify a product in this photo
+              <p className="text-error text-sm font-medium">
+                We couldn&apos;t identify a product in this photo. Please upload a clear photo
+                of a single item. No credits were used.
               </p>
+              {/* Surface the AI's specific reason beneath the spec copy */}
               {reason && (
                 <p className="text-text-secondary text-sm leading-relaxed">
                   {reason}
@@ -190,15 +191,6 @@ export function ImageValidator({
               )}
             </div>
           </div>
-          <div className="flex items-center gap-2 pt-1">
-            <div className="w-1.5 h-1.5 rounded-full bg-success shrink-0" />
-            <p className="text-success text-sm font-medium">
-              No credits were used.
-            </p>
-          </div>
-          <p className="text-text-secondary text-sm">
-            Upload a clear photo of a single item on a plain background for best results.
-          </p>
         </div>
       )}
 

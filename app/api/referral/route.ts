@@ -8,7 +8,7 @@ export async function GET() {
   // Referral code: deterministic slug derived from the Clerk user ID
   // Strips non-alphanumeric chars and takes the first 12 characters.
   const referralCode = userId.replace(/[^a-z0-9]/gi, '').slice(0, 12).toLowerCase()
-  const appUrl       = process.env.NEXT_PUBLIC_APP_URL ?? 'https://listlistlist.com'
+  const appUrl       = process.env.NEXT_PUBLIC_APP_URL ?? 'https://listlistlist.co'
   const referralLink = `${appUrl}/?ref=${referralCode}`
 
   try {

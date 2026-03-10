@@ -40,6 +40,7 @@
  * Vercel sets this header automatically when invoking cron jobs.
  */
 
+import { timingSafeEqual } from 'crypto'
 import {
   getUsersNeedingDay2Email,
   getUsersNeedingDay5Email,
@@ -70,7 +71,14 @@ function isCronAuthorised(req: Request): boolean {
   }
   const auth  = req.headers.get('authorization') ?? ''
   const token = auth.replace(/^Bearer\s+/i, '')
-  return token === secret
+  try {
+    // Constant-time comparison — prevents timing-based secret discovery
+    const a = Buffer.from(token)
+    const b = Buffer.from(secret)
+    return a.length === b.length && timingSafeEqual(a, b)
+  } catch {
+    return false
+  }
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────

@@ -87,13 +87,6 @@ function stripMarkdown(s: string): string {
     .trim()
 }
 
-/**
- * Strips markdown from every string inside an array.
- */
-function stripMarkdownArray(arr: string[]): string[] {
-  return arr.map(stripMarkdown)
-}
-
 // ─── Truncation helpers ───────────────────────────────────────────────────────
 
 /**
@@ -396,7 +389,7 @@ function validateTikTok(
 
   // Hashtags — strip markdown, enforce count range (keep up to max, warn below min)
   const rawHashtags = safeStrArray(r.hashtags, stripped, 'hashtags')
-  let hashtags = rawHashtags.slice(0, LIMITS.tiktok.hashtagMax)
+  const hashtags = rawHashtags.slice(0, LIMITS.tiktok.hashtagMax)
   if (rawHashtags.length > LIMITS.tiktok.hashtagMax) {
     truncated.push('hashtags')
     console.warn(
