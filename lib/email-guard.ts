@@ -96,20 +96,22 @@ export function checkEmail(email: string): EmailGuardResult {
  * not just suspicious ones. This gives us a complete picture of signup patterns.
  */
 export interface SignupLogEntry {
-  userId:        string
-  email:         string
-  domain:        string
-  provider:      string          // e.g. 'google', 'email'
-  isDisposable:  boolean
-  isSuspiciousTld: boolean
-  blocked:       boolean
-  timestamp:     string          // ISO 8601
+  userId:               string
+  email:                string
+  domain:               string
+  provider:             string    // e.g. 'google', 'email_code', 'email_link'
+  verificationStrategy: string | null  // Clerk's strategy string: 'from_oauth_google', 'email_code', etc.
+  isDisposable:         boolean
+  isSuspiciousTld:      boolean
+  blocked:              boolean
+  timestamp:            string    // ISO 8601
 }
 
 export function buildSignupLogEntry(
-  userId:   string,
-  email:    string,
-  provider: string
+  userId:               string,
+  email:                string,
+  provider:             string,
+  verificationStrategy: string | null = null,
 ): SignupLogEntry {
   const domain = extractDomain(email) ?? email
   return {
@@ -117,6 +119,7 @@ export function buildSignupLogEntry(
     email,
     domain,
     provider,
+    verificationStrategy,
     isDisposable:    isKnownDisposableDomain(domain),
     isSuspiciousTld: hasSuspiciousTld(domain),
     blocked:         isKnownDisposableDomain(domain),

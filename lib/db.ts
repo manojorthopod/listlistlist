@@ -304,7 +304,126 @@ export async function hasEmailBeenSent(
   return data !== null
 }
 
-// Demo runs
+// ─── Email sequence query helpers ────────────────────────────────────────────
+// Used by /api/cron/email-sequence to find users due for each automated email.
+// All helpers do two queries (email_log + users) and filter in application code
+// to avoid complex SQL and to stay compatible with the Supabase JS client.
+
+/** Returns the set of user IDs already sent a given email type. */
+async function getSentUserIds(
+  emailType: EmailLog['email_type']
+): Promise<Set<string>> {
+  const { data } = await db
+    .from('email_log')
+    .select('user_id')
+    .eq('email_type', emailType)
+  return new Set(((data ?? []) as Array<{ user_id: string }>).map((r) => r.user_id))
+}
+
+/**
+ * Returns the set of user IDs who have at least one completed listing.
+ * Used by the Day 2 tip query to skip users who have already generated a listing.
+ */
+async function getUserIdsWithCompletedListing(): Promise<Set<string>> {
+  const { data } = await db
+    .from('listings')
+    .select('user_id')
+    .eq('status', 'completed')
+  return new Set(((data ?? []) as Array<{ user_id: string }>).map((r) => r.user_id))
+}
+
+/**
+ * Day 2 — Feature tip
+ * Eligibility: still in trial, signed up 48+ hours ago, no completed listing yet,
+ * email not already sent.
+ */
+export async function getUsersNeedingDay2Email(): Promise<User[]> {
+  const cutoff = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString()
+
+  const [sentIds, listingUserIds] = await Promise.all([
+    getSentUserIds('day2_tip'),
+    getUserIdsWithCompletedListing(),
+  ])
+
+  const { data, error } = await db
+    .from('users')
+    .select('*')
+    .eq('subscription_status', 'trial')
+    .lte('created_at', cutoff)
+
+  if (error) throw new Error(`getUsersNeedingDay2Email: ${error.message}`)
+
+  return ((data ?? []) as User[]).filter(
+    (u) => !sentIds.has(u.id) && !listingUserIds.has(u.id)
+  )
+}
+
+/**
+ * Day 5 — Trial nudge
+ * Eligibility: still in trial (not subscribed), signed up 5+ days ago,
+ * email not already sent.
+ */
+export async function getUsersNeedingDay5Email(): Promise<User[]> {
+  const cutoff = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
+  const sentIds = await getSentUserIds('day5_trial_nudge')
+
+  const { data, error } = await db
+    .from('users')
+    .select('*')
+    .eq('subscription_status', 'trial')
+    .lte('created_at', cutoff)
+
+  if (error) throw new Error(`getUsersNeedingDay5Email: ${error.message}`)
+
+  return ((data ?? []) as User[]).filter((u) => !sentIds.has(u.id))
+}
+
+/**
+ * Day 7 — Trial expiry
+ * Eligibility: still in trial (not subscribed), signed up 7+ days ago,
+ * email not already sent.
+ */
+export async function getUsersNeedingDay7Email(): Promise<User[]> {
+  const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+  const sentIds = await getSentUserIds('day7_trial_expiry')
+
+  const { data, error } = await db
+    .from('users')
+    .select('*')
+    .eq('subscription_status', 'trial')
+    .lte('created_at', cutoff)
+
+  if (error) throw new Error(`getUsersNeedingDay7Email: ${error.message}`)
+
+  return ((data ?? []) as User[]).filter((u) => !sentIds.has(u.id))
+}
+
+/**
+ * Low credits alert
+ * Eligibility: active paying subscriber, total credits (subscription + top-up) ≤ 5,
+ * email not already sent.
+ *
+ * Per spec: max one low-credits alert per user lifetime (enforced by UNIQUE
+ * constraint on email_log). If they top up and run low again, no second alert.
+ */
+export async function getUsersNeedingLowCreditsEmail(): Promise<User[]> {
+  const sentIds = await getSentUserIds('credits_low')
+
+  const { data, error } = await db
+    .from('users')
+    .select('*')
+    .in('subscription_status', ['starter', 'pro'])
+
+  if (error) throw new Error(`getUsersNeedingLowCreditsEmail: ${error.message}`)
+
+  return ((data ?? []) as User[]).filter(
+    (u) =>
+      !sentIds.has(u.id) &&
+      u.subscription_credits + u.topup_credits <= 5
+  )
+}
+
+// ─── Demo runs ────────────────────────────────────────────────────────────────
 
 export async function getDemoRunCounts(
   ipHash: string
