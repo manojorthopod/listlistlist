@@ -1,11 +1,14 @@
 import { auth } from '@clerk/nextjs/server'
+import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { ZapIcon, CoinsIcon, PlusIcon } from 'lucide-react'
 import { getUserById, getListingsByUser } from '@/lib/db'
 import { PLAN_ROLLOVER_CAP } from '@/types'
+import { isValidReferralCode } from '@/lib/referral'
 import CreditBadge from '@/components/credit-badge'
 import ReferralWidget from '@/components/referral-widget'
+import ReferralRecorder from '@/app/dashboard/referral-recorder'
 import ListingsGrid from '@/app/dashboard/listings-grid'
 import type { User } from '@/types'
 
@@ -191,6 +194,11 @@ export default async function DashboardPage() {
   const { userId } = await auth()
   if (!userId) redirect('/sign-in')
 
+  const cookieStore = await cookies()
+  const rawRefCode  = cookieStore.get('referral_code')?.value ?? null
+  // Only pass a code that passes our format check — never forward arbitrary cookie values
+  const pendingReferralCode = rawRefCode && isValidReferralCode(rawRefCode) ? rawRefCode : null
+
   const [user, listings] = await Promise.all([
     getUserById(userId),
     getListingsByUser(userId, 0, 10),
@@ -202,6 +210,9 @@ export default async function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-base">
+
+      {/* ── Referral attribution (no UI) ───────────────────────────────────── */}
+      {pendingReferralCode && <ReferralRecorder referralCode={pendingReferralCode} />}
 
       {/* ── Top navigation ─────────────────────────────────────────────────── */}
       <nav className="border-b border-border bg-surface sticky top-0 z-40">

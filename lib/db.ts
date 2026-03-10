@@ -5,9 +5,6 @@ import type {
   TopupPurchase,
   Referral,
   EmailLog,
-  Platform,
-  SubscriptionStatus,
-  BillingInterval,
 } from '@/types'
 
 // ─── Supabase client (server-side, service role) ──────────────────────────────
@@ -50,10 +47,20 @@ export async function upsertUser(
   userId: string,
   email: string
 ): Promise<User> {
+  // Compute the referral code from the userId — deterministic, same algorithm
+  // as buildReferralCode() in lib/referral.ts. Stored in the DB so we can
+  // look up a referrer by their code in O(1) via the unique index.
+  const referralCode = userId.replace(/[^a-z0-9]/gi, '').slice(0, 12).toLowerCase()
+
   const { data, error } = await db
     .from('users')
     .upsert(
-      { id: userId, email, trial_started_at: new Date().toISOString() },
+      {
+        id:               userId,
+        email,
+        referral_code:    referralCode,
+        trial_started_at: new Date().toISOString(),
+      },
       { onConflict: 'id', ignoreDuplicates: true }
     )
     .select()
@@ -276,6 +283,83 @@ export async function getReferralsByReferrer(referrerId: string): Promise<Referr
   if (error) throw new Error(`Failed to fetch referrals: ${error.message}`)
   return (data ?? []) as Referral[]
 }
+
+/**
+ * Find a user by their stored referral_code (the short alphanumeric slug
+ * that appears in referral links as ?ref=CODE).
+ * Uses the unique index on users.referral_code for O(1) lookup.
+ */
+export async function getUserByReferralCode(code: string): Promise<User | null> {
+  const { data } = await db
+    .from('users')
+    .select('*')
+    .eq('referral_code', code.toLowerCase())
+    .maybeSingle()
+  return (data as User) ?? null
+}
+
+/**
+ * Get the referral row where this user was the referred party.
+ * Used when a user subscribes to check whether a referrer should be credited.
+ */
+export async function getReferralForReferredUser(referredId: string): Promise<Referral | null> {
+  const { data } = await db
+    .from('referrals')
+    .select('*')
+    .eq('referred_user_id', referredId)
+    .maybeSingle()
+  return (data as Referral) ?? null
+}
+
+/**
+ * Atomically award 10 referral credits to the referrer, but only if the
+ * referral row has not already been credited.
+ *
+ * The `.eq('credits_awarded', false)` condition acts as a compare-and-swap:
+ * only one concurrent caller will succeed in updating the row from false→true.
+ * The second caller gets back 0 rows and skips the credit grant — preventing
+ * any double-award even under parallel Stripe webhook retries.
+ *
+ * Returns true when credits were awarded, false when already awarded.
+ */
+export async function awardReferralIfNotAwarded(
+  referralId: string,
+  referrerId: string,
+): Promise<boolean> {
+  // Step 1 — mark as awarded (atomic guard)
+  const { data: updated } = await db
+    .from('referrals')
+    .update({ credits_awarded: true })
+    .eq('id', referralId)
+    .eq('credits_awarded', false)   // only fires if NOT already awarded
+    .select('id')
+    .maybeSingle()
+
+  if (!updated) {
+    // Row was already marked awarded (concurrent request beat us, or already done)
+    return false
+  }
+
+  // Step 2 — add bonus credits to the referrer's topup balance
+  const { data: referrer } = await db
+    .from('users')
+    .select('topup_credits')
+    .eq('id', referrerId)
+    .single()
+
+  if (referrer) {
+    await db
+      .from('users')
+      .update({ topup_credits: referrer.topup_credits + REFERRAL_BONUS_CREDITS })
+      .eq('id', referrerId)
+  }
+
+  return true
+}
+
+// ─── Referral bonus constant ──────────────────────────────────────────────────
+// Exported so API routes and the Stripe webhook share the same value.
+export const REFERRAL_BONUS_CREDITS = 10
 
 // Email log
 

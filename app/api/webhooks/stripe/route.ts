@@ -8,7 +8,14 @@ import {
   PLAN_ROLLOVER_CAP,
   TOPUP_CREDITS,
 } from '@/lib/stripe'
-import { db, updateUser, createTopupPurchase, applyMonthlyRollover } from '@/lib/db'
+import {
+  db,
+  updateUser,
+  createTopupPurchase,
+  applyMonthlyRollover,
+  getReferralForReferredUser,
+  awardReferralIfNotAwarded,
+} from '@/lib/db'
 import type { TopupPackId } from '@/types'
 
 // Stripe requires the raw body for signature verification — no JSON parsing
@@ -119,6 +126,31 @@ export async function POST(req: Request) {
           })
 
           console.log(`[stripe webhook] Activated ${plan} (${interval}) for user ${userId}`)
+
+          // ── Referral credit award ────────────────────────────────────────
+          // Check whether this user was referred by someone. If a referral row
+          // exists and credits haven't been awarded yet, award 10 top-up credits
+          // to the referrer now. The atomic guard in awardReferralIfNotAwarded
+          // prevents double-awarding even if this webhook is replayed.
+          try {
+            const referral = await getReferralForReferredUser(userId)
+            if (referral && !referral.credits_awarded) {
+              const awarded = await awardReferralIfNotAwarded(
+                referral.id,
+                referral.referrer_user_id,
+              )
+              if (awarded) {
+                console.log(
+                  `[stripe webhook] Awarded referral credits — referrer: ${referral.referrer_user_id}, ` +
+                  `referred: ${userId}`
+                )
+              }
+            }
+          } catch (err) {
+            // Referral award failure must never fail the webhook response —
+            // Stripe would retry and could double-activate the subscription.
+            console.error('[stripe webhook] Referral credit award error:', err)
+          }
         }
 
         // ── mode: payment (top-up pack purchase) ────────────────────────────

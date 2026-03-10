@@ -35,6 +35,7 @@ export interface User {
   trial_started_at: string | null
   credits_reset_at: string | null
   onboarding_email_sent: boolean
+  referral_code: string | null
   created_at: string
 }
 
