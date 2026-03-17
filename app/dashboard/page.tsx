@@ -362,7 +362,7 @@ export default async function DashboardPage() {
           <div className="lg:col-span-2 space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-semibold text-text-primary">Recent listings</h2>
-              {listings.length > 0 && (
+              {(listings?.length ?? 0) > 0 && (
                 <Link
                   href="/listings"
                   className="text-sm text-text-secondary hover:text-text-primary transition-colors"
@@ -373,7 +373,7 @@ export default async function DashboardPage() {
             </div>
 
             {/* Listings grid — client component (handles load-more pagination) */}
-            <ListingsGrid initialListings={listings} />
+            <ListingsGrid initialListings={listings ?? []} />
           </div>
 
           {/* Right column — sidebar (1/3 width) */}

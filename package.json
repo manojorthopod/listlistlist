@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@clerk/nextjs": "^7.0.1",
+    "@clerk/nextjs": "^6.39.0",
     "@supabase/supabase-js": "^2.98.0",
     "@uploadthing/react": "^7.3.3",
     "geist": "^1.7.0",
