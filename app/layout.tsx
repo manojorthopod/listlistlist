@@ -33,7 +33,7 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <body
-          className={`${geistSans.variable} ${geistMono.variable} bg-base text-text-primary antialiased`}
+          className={`${geistSans.variable} ${geistMono.variable} bg-base text-text-primary`}
         >
           {/* Hydrates UploadThing router config on the server so the upload
               components never show a "Loading…" state on first render. */}

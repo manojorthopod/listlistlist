@@ -19,39 +19,39 @@ interface PricingCardProps {
 
 const PLAN_CONFIG = {
   trial: {
-    name:             'Free Trial',
-    monthlyPrice:     null,
-    annualPrice:      null,
-    trialLabel:       '7 days free',
-    credits:          '10 credits',
-    rolloverCap:      null,
-    highlighted:      false,
-    ctaLabel:         'Start free trial',
-    ctaHref:          '/sign-up',
+    name:         'Free Trial',
+    monthlyPrice: null,
+    annualPrice:  null,
+    trialLabel:   '7 days free',
+    credits:      '10 credits',
+    rolloverCap:  null,
+    highlighted:  false,
+    ctaLabel:     'Start free trial',
+    ctaHref:      '/sign-up',
   },
   starter: {
-    name:             'Starter',
-    monthlyPrice:     39,
-    annualPrice:      390,
-    annualSaving:     78,
-    trialLabel:       null,
-    credits:          '50 credits/month',
-    rolloverCap:      'Rolls over up to 100',
-    highlighted:      false,
-    ctaLabel:         'Get Starter',
-    ctaHref:          null,
+    name:         'Starter',
+    monthlyPrice: 39,
+    annualPrice:  390,
+    annualSaving: 78,
+    trialLabel:   null,
+    credits:      '50 credits/month',
+    rolloverCap:  'Rolls over up to 100',
+    highlighted:  false,
+    ctaLabel:     'Get Starter',
+    ctaHref:      null,
   },
   pro: {
-    name:             'Pro',
-    monthlyPrice:     79,
-    annualPrice:      790,
-    annualSaving:     158,
-    trialLabel:       null,
-    credits:          '1,000 credits/month',
-    rolloverCap:      'Rolls over up to 2,000',
-    highlighted:      true,
-    ctaLabel:         'Get Pro',
-    ctaHref:          null,
+    name:         'Pro',
+    monthlyPrice: 79,
+    annualPrice:  790,
+    annualSaving: 158,
+    trialLabel:   null,
+    credits:      '1,000 credits/month',
+    rolloverCap:  'Rolls over up to 2,000',
+    highlighted:  true,
+    ctaLabel:     'Get Pro',
+    ctaHref:      null,
   },
 } as const
 
@@ -71,11 +71,11 @@ const FEATURES: Record<'trial' | 'starter' | 'pro', PricingFeature[]> = {
     { label: 'Bulk upload',                   available: false, note: 'Coming soon' },
   ],
   pro: [
-    { label: '1,000 credits/month',           available: true },
-    { label: 'All 6 platforms',               available: true },
+    { label: '1,000 credits/month',             available: true },
+    { label: 'All 6 platforms',                 available: true },
     { label: 'Credits roll over (up to 2,000)', available: true },
-    { label: 'Priority generation',           available: true },
-    { label: 'Bulk upload',                   available: false, note: 'Coming soon' },
+    { label: 'Priority generation',             available: true },
+    { label: 'Bulk upload',                     available: false, note: 'Coming soon' },
   ],
 }
 
@@ -85,9 +85,9 @@ function isPaidPlan(p: 'trial' | 'starter' | 'pro'): p is 'starter' | 'pro' {
 
 export function PricingCard({ plan, interval, currentPlan, isAuthenticated }: PricingCardProps) {
   const [loading, setLoading] = useState(false)
-  const router = useRouter()
-  const config  = PLAN_CONFIG[plan]
-  const features = FEATURES[plan]
+  const router    = useRouter()
+  const config    = PLAN_CONFIG[plan]
+  const features  = FEATURES[plan]
 
   const price = plan === 'trial'
     ? null
@@ -99,22 +99,16 @@ export function PricingCard({ plan, interval, currentPlan, isAuthenticated }: Pr
   const isHighlighted = config.highlighted
 
   async function handleCta() {
-    if (plan === 'trial') {
-      router.push('/sign-up')
-      return
-    }
-    if (!isAuthenticated) {
-      router.push('/sign-up')
-      return
-    }
+    if (plan === 'trial') { router.push('/sign-up'); return }
+    if (!isAuthenticated) { router.push('/sign-up'); return }
     if (isCurrentPlan) return
 
     setLoading(true)
     try {
-      const res = await fetch('/api/checkout', {
-        method: 'POST',
+      const res  = await fetch('/api/checkout', {
+        method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan, interval }),
+        body:    JSON.stringify({ plan, interval }),
       })
       const data = await res.json()
       if (data.url) window.location.href = data.url
@@ -125,34 +119,32 @@ export function PricingCard({ plan, interval, currentPlan, isAuthenticated }: Pr
 
   return (
     <div
-      className={`relative flex flex-col rounded-xl p-6 border transition-colors duration-150 ${
+      className={`relative flex flex-col rounded-xl p-6 shadow-card transition-shadow duration-150 hover:shadow-card-hover ${
         isHighlighted
-          ? 'bg-surface-2 border-accent'
-          : 'bg-surface border-border hover:border-border-2'
+          ? 'bg-white border border-border border-t-[3px] border-t-accent'
+          : 'bg-white border border-border'
       }`}
     >
       {isHighlighted && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-          <span className="bg-accent text-white text-xs font-semibold px-3 py-1 rounded-full">
-            Most popular
-          </span>
-        </div>
+        <span className="self-start mb-2 text-xs font-medium bg-accent-light text-accent px-2.5 py-1 rounded-full">
+          Most popular
+        </span>
       )}
 
       {/* Plan name */}
-      <h3 className="text-xl font-semibold text-text-primary">{config.name}</h3>
+      <h3 className="text-xl font-medium text-text-primary">{config.name}</h3>
 
       {/* Price */}
       <div className="mt-4 mb-6">
         {plan === 'trial' ? (
-          <div className="text-3xl font-bold text-text-primary">
+          <div className="text-3xl font-medium text-text-primary">
             {config.trialLabel}
           </div>
         ) : (
           <>
             <div className="flex items-end gap-1">
-              <span className="text-4xl font-bold text-text-primary">
-                £{interval === 'annual' ? price : price}
+              <span className="text-4xl font-medium text-text-primary">
+                £{price}
               </span>
               <span className="text-text-secondary text-sm mb-1.5">
                 /{interval === 'annual' ? 'year' : 'month'}
@@ -197,17 +189,13 @@ export function PricingCard({ plan, interval, currentPlan, isAuthenticated }: Pr
       <button
         onClick={handleCta}
         disabled={loading || isCurrentPlan}
-        className={`w-full font-semibold rounded-lg px-5 py-2.5 transition-colors duration-150 disabled:opacity-40 disabled:cursor-not-allowed ${
+        className={`w-full font-medium rounded-lg px-5 py-2.5 transition-colors duration-150 disabled:opacity-40 disabled:cursor-not-allowed ${
           isHighlighted
             ? 'bg-accent hover:bg-accent-hover text-white'
-            : 'border border-border-2 hover:border-accent text-text-primary'
+            : 'bg-[#1A1814] hover:bg-[#2D2A25] text-white'
         }`}
       >
-        {loading
-          ? 'Redirecting…'
-          : isCurrentPlan
-          ? 'Current plan'
-          : config.ctaLabel}
+        {loading ? 'Redirecting…' : isCurrentPlan ? 'Current plan' : config.ctaLabel}
       </button>
     </div>
   )

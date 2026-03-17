@@ -65,8 +65,8 @@ function ListingCard({ listing }: { listing: Listing }) {
       href={`/listings/${listing.id}`}
       className="
         group flex items-start gap-4
-        bg-surface border border-border rounded-xl p-4
-        hover:border-border-2 transition-colors duration-150
+        bg-white border border-border rounded-xl p-4 shadow-card
+        hover:shadow-card-hover hover:border-border-2 transition-all duration-150
       "
     >
       {/* Thumbnail */}
@@ -88,7 +88,7 @@ function ListingCard({ listing }: { listing: Listing }) {
       {/* Details */}
       <div className="flex-1 min-w-0 space-y-1.5">
         <div className="flex items-start justify-between gap-2">
-          <p className="text-sm font-semibold text-text-primary truncate">
+          <p className="text-sm font-medium text-text-primary truncate">
             {productType}
           </p>
           <StatusBadge status={listing.status} />
@@ -111,12 +111,12 @@ function ListingCard({ listing }: { listing: Listing }) {
 
 function EmptyState() {
   return (
-    <div className="flex flex-col items-center justify-center py-16 gap-4 rounded-xl border border-border bg-surface text-center">
-      <div className="w-12 h-12 rounded-xl bg-accent-muted flex items-center justify-center">
+    <div className="flex flex-col items-center justify-center py-16 gap-4 rounded-xl border border-border bg-white shadow-card text-center">
+      <div className="w-12 h-12 rounded-xl bg-accent-light flex items-center justify-center">
         <ZapIcon className="w-5 h-5 text-accent" />
       </div>
       <div>
-        <p className="text-sm font-semibold text-text-primary">No listings yet</p>
+        <p className="text-sm font-medium text-text-primary">No listings yet</p>
         <p className="text-xs text-text-secondary mt-1">
           Upload a product photo to generate your first listing.
         </p>
@@ -124,7 +124,7 @@ function EmptyState() {
       <Link
         href="/generate"
         className="
-          bg-accent hover:bg-accent-hover text-white font-semibold
+          bg-accent hover:bg-accent-hover text-white font-medium
           rounded-lg px-4 py-2 text-sm transition-colors duration-150
         "
       >
@@ -182,7 +182,7 @@ export default function ListingsGrid({ initialListings }: ListingsGridProps) {
           className="
             w-full py-3 text-sm font-medium text-text-secondary
             hover:text-text-primary border border-border hover:border-border-2
-            rounded-xl bg-surface transition-colors duration-150
+            rounded-xl bg-white transition-colors duration-150
             disabled:opacity-40 disabled:cursor-not-allowed
           "
         >

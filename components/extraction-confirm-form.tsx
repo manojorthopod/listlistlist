@@ -205,7 +205,7 @@ export function ExtractionConfirmForm({
       <div className="space-y-1">
         <div className="flex items-center gap-2 mb-5">
           <SlidersHorizontalIcon className="w-4 h-4 text-text-secondary" />
-          <h2 className="text-xl font-semibold text-text-primary">Confirm product details</h2>
+          <h2 className="text-xl font-medium text-text-primary">Confirm product details</h2>
         </div>
         <p className="text-text-secondary text-sm leading-relaxed">
           Review what we extracted from your image. Edit anything that&apos;s wrong or missing
@@ -323,7 +323,7 @@ export function ExtractionConfirmForm({
       {/* ── Section: User-added context ──────────────────────────────────────── */}
       <div className="border-t border-border pt-7 space-y-5">
         <div>
-          <h3 className="text-base font-semibold text-text-primary">
+          <h3 className="text-base font-medium text-text-primary">
             Add context <span className="text-text-secondary font-normal text-sm">(optional — improves output quality significantly)</span>
           </h3>
         </div>
@@ -405,7 +405,7 @@ export function ExtractionConfirmForm({
         <button
           type="submit"
           disabled={!canSubmit}
-          className="w-full bg-accent hover:bg-accent-hover text-white font-semibold rounded-lg px-5 py-3 transition-colors duration-150 disabled:opacity-40 disabled:cursor-not-allowed text-base"
+          className="w-full bg-accent hover:bg-accent-hover text-white font-medium rounded-lg px-5 py-3 transition-colors duration-150 disabled:opacity-40 disabled:cursor-not-allowed text-base"
         >
           {disabled
             ? 'Generating listings…'

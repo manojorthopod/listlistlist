@@ -283,8 +283,8 @@ export default async function DashboardPage() {
       {/* ── Top navigation ─────────────────────────────────────────────────── */}
       <nav className="border-b border-border bg-surface sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between gap-4">
-          <Link href="/" className="font-mono font-bold text-text-primary tracking-tight text-lg">
-            listlistlist
+          <Link href="/">
+            <img src="/logo.svg" alt="listlistlist" style={{ height: '40px', width: 'auto' }} />
           </Link>
           <div className="flex items-center gap-3">
             <Link
@@ -311,7 +311,7 @@ export default async function DashboardPage() {
         {/* ── Page header ──────────────────────────────────────────────────── */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-text-primary">Dashboard</h1>
+            <h1 className="text-3xl font-medium tracking-tight text-text-primary">Dashboard</h1>
             <p className="text-text-secondary text-sm mt-1">
               Your listings, credits, and account at a glance.
             </p>
@@ -322,7 +322,7 @@ export default async function DashboardPage() {
               href="/generate"
               className="
                 inline-flex items-center gap-2
-                bg-accent hover:bg-accent-hover text-white font-semibold
+                bg-[#1A1814] hover:bg-[#2D2A25] text-white font-medium
                 rounded-lg px-4 py-2.5 text-sm
                 transition-colors duration-150
               "
@@ -361,7 +361,7 @@ export default async function DashboardPage() {
           {/* Left column — listings (2/3 width) */}
           <div className="lg:col-span-2 space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-text-primary">Recent listings</h2>
+              <h2 className="text-xl font-medium text-text-primary">Recent listings</h2>
               {(listings?.length ?? 0) > 0 && (
                 <Link
                   href="/listings"

@@ -321,7 +321,7 @@ export default function ListingResultTabs({
       </div>
 
       {/* Tab bar */}
-      <div className="bg-surface border-b border-border flex gap-0 overflow-x-auto">
+      <div className="bg-white border border-border rounded-lg flex gap-0 overflow-x-auto">
         {platforms.map((p) => {
           const meta  = PLATFORM_META[p]
           const state = platformState[p]
@@ -412,9 +412,9 @@ export default function ListingResultTabs({
 
       {/* Post-generation referral prompt */}
       {referralUrl && (
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border border-border bg-surface p-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border border-border bg-white p-5 shadow-card">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-accent-muted flex items-center justify-center flex-shrink-0">
+            <div className="w-9 h-9 rounded-lg bg-accent-light flex items-center justify-center flex-shrink-0">
               <UsersIcon className="w-4 h-4 text-accent" />
             </div>
             <div>
@@ -433,7 +433,7 @@ export default function ListingResultTabs({
             className="
               self-start sm:self-auto flex-shrink-0 inline-flex items-center gap-1.5
               bg-accent hover:bg-accent-hover text-white
-              px-4 py-2 rounded-lg text-sm font-semibold
+              px-4 py-2 rounded-lg text-sm font-medium
               transition-colors duration-150
             "
           >

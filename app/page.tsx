@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { UploadCloudIcon, CheckCircleIcon, ClipboardIcon, ZapIcon, ChevronRightIcon } from 'lucide-react'
+import { UploadCloudIcon, CheckCircleIcon, ClipboardIcon, ChevronRightIcon } from 'lucide-react'
 import DemoSection from '@/components/demo-section'
 import PricingPreview from '@/app/pricing-preview'
 import PlatformRow from '@/components/platform-row'
@@ -8,11 +8,11 @@ import PlatformRow from '@/components/platform-row'
 
 function Nav() {
   return (
-    <nav className="border-b border-border/50 bg-base/80 backdrop-blur-sm sticky top-0 z-50">
-      <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between gap-4">
-        <span className="font-mono font-bold text-text-primary tracking-tight text-lg">
-          listlistlist
-        </span>
+    <nav className="border-b border-border bg-white sticky top-0 z-50">
+      <div className="max-w-content mx-auto px-6 h-14 flex items-center justify-between gap-4">
+        <Link href="/">
+          <img src="/logo.svg" alt="listlistlist" style={{ height: '40px', width: 'auto' }} />
+        </Link>
         <div className="flex items-center gap-1">
           <Link
             href="/pricing"
@@ -28,11 +28,7 @@ function Nav() {
           </Link>
           <Link
             href="/sign-up"
-            className="
-              ml-2 inline-flex items-center gap-1.5
-              bg-accent hover:bg-accent-hover text-white font-semibold
-              px-4 py-2 rounded-lg text-sm transition-colors duration-150
-            "
+            className="ml-2 inline-flex items-center gap-1.5 bg-[#1A1814] hover:bg-[#2D2A25] text-white font-medium px-4 py-2 rounded-lg text-sm transition-colors duration-150"
           >
             Start free trial
           </Link>
@@ -46,66 +42,46 @@ function Nav() {
 
 function Hero() {
   return (
-    <section className="relative overflow-hidden bg-base py-24 sm:py-32">
-      {/* Background glow blobs */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -top-24 right-0 w-[600px] h-[600px] rounded-full opacity-[0.04] blur-3xl"
-        style={{ background: '#7C3AED' }}
-      />
-
-      <div className="relative max-w-6xl mx-auto px-6 text-center space-y-8">
+    <section className="bg-base py-24 sm:py-32">
+      <div className="max-w-content mx-auto px-6 text-center space-y-8">
         {/* Eyebrow */}
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border bg-surface text-xs text-text-secondary font-medium">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border bg-white text-xs text-text-secondary font-medium shadow-card">
           <span className="w-1.5 h-1.5 rounded-full bg-success" />
           7-day free trial — no credit card required
         </div>
 
         {/* Headline */}
-        <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight text-text-primary leading-[1.05] max-w-3xl mx-auto">
-          Upload one photo.{' '}
+        <h1 className="text-[48px] font-medium tracking-tight text-text-primary leading-[1.1] max-w-3xl mx-auto">
+          Upload one photo.
           <br className="hidden sm:block" />
-          Get listings for{' '}
-          <span className="bg-gradient-to-r from-accent-light to-[#C084FC] bg-clip-text text-transparent">
-            every platform you sell on.
-          </span>
+          Get listings for every platform you sell on.
         </h1>
 
         {/* Subheadline */}
-        <p className="text-lg text-text-secondary max-w-xl mx-auto leading-relaxed">
-          Amazon, Etsy, eBay, Shopify, WooCommerce, and TikTok Shop —{' '}
-          optimised copy in under 60 seconds.
+        <p className="text-xl text-text-secondary max-w-[540px] mx-auto leading-relaxed">
+          Amazon, Etsy, eBay, Shopify, WooCommerce, and TikTok Shop — optimised copy in under 60 seconds.
         </p>
 
         {/* CTAs */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
           <Link
             href="/sign-up"
-            className="
-              inline-flex items-center gap-2
-              bg-accent hover:bg-accent-hover text-white font-semibold
-              px-6 py-3 rounded-lg text-base transition-colors duration-150
-            "
+            className="inline-flex items-center gap-2 bg-[#1A1814] hover:bg-[#2D2A25] text-white font-medium px-6 py-3 rounded-lg text-base transition-colors duration-150"
           >
-            <ZapIcon className="w-4 h-4" />
             Start your free trial
           </Link>
           <a
             href="#demo"
-            className="
-              inline-flex items-center gap-2
-              border border-border-2 hover:border-accent text-text-primary font-medium
-              px-6 py-3 rounded-lg text-base transition-colors duration-150
-            "
+            className="inline-flex items-center gap-2 border border-border bg-white hover:bg-surface-2 text-text-primary font-medium px-6 py-3 rounded-lg text-base transition-colors duration-150 shadow-card"
           >
             See it in action
             <ChevronRightIcon className="w-4 h-4" />
           </a>
         </div>
 
-        {/* Platform logo row */}
-        <div className="pt-4">
-          <p className="text-xs text-text-disabled mb-4 uppercase tracking-widest">
+        {/* Platform row */}
+        <div className="pt-6">
+          <p className="text-xs text-text-disabled mb-5 uppercase tracking-widest font-medium">
             Generates listings for
           </p>
           <PlatformRow />
@@ -119,17 +95,10 @@ function Hero() {
 
 function DemoWrapper() {
   return (
-    <section id="demo" className="relative py-24 bg-base">
-      {/* Bottom-left blob */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute bottom-0 left-0 w-[500px] h-[500px] rounded-full opacity-[0.04] blur-3xl"
-        style={{ background: '#7C3AED' }}
-      />
-
-      <div className="relative max-w-3xl mx-auto px-6 space-y-10">
+    <section id="demo" className="py-20 bg-surface-2">
+      <div className="max-w-3xl mx-auto px-6 space-y-10">
         <div className="text-center space-y-2">
-          <h2 className="text-3xl font-bold tracking-tight text-text-primary">
+          <h2 className="text-3xl font-medium tracking-tight text-text-primary">
             See it before you sign up
           </h2>
           <p className="text-text-secondary">
@@ -170,34 +139,38 @@ const TESTIMONIALS = [
 
 function Testimonials() {
   return (
-    <section className="py-24 bg-base">
-      <div className="max-w-6xl mx-auto px-6 space-y-12">
+    <section className="py-20 bg-surface-2">
+      <div className="max-w-content mx-auto px-6 space-y-12">
         <div className="text-center space-y-2">
-          <h2 className="text-3xl font-bold tracking-tight text-text-primary">
+          <h2 className="text-3xl font-medium tracking-tight" style={{ color: '#1A1814' }}>
             Sellers are saving hours every week
           </h2>
-          <p className="text-text-secondary">
+          <p style={{ color: '#6B6760' }}>
             Beta testers across platforms report consistent time savings from day one.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {TESTIMONIALS.map((t) => (
             <div
               key={t.name}
-              className="bg-surface border border-border rounded-xl p-6 space-y-4"
+              className="border border-border rounded-xl p-6 space-y-4 shadow-card"
+              style={{ backgroundColor: '#FFFFFF' }}
             >
-              <p className="text-text-primary italic text-base leading-relaxed">
+              <p
+                className="font-normal text-base leading-relaxed"
+                style={{ color: '#1A1814' }}
+              >
                 &ldquo;{t.quote}&rdquo;
               </p>
               <div className="flex items-center justify-between gap-2">
                 <div>
-                  <p className="text-sm font-semibold text-text-primary">{t.name}</p>
-                  <p className="text-sm text-text-secondary">{t.role}</p>
+                  <p className="text-sm font-medium" style={{ color: '#1A1814' }}>{t.name}</p>
+                  <p className="text-sm" style={{ color: '#6B6760' }}>{t.role}</p>
                 </div>
                 <span
-                  className="flex-shrink-0 px-2 py-1 rounded text-xs font-semibold"
-                  style={{ background: `${t.color}20`, color: t.color }}
+                  className="flex-shrink-0 px-2.5 py-1 rounded-lg text-xs font-medium"
+                  style={{ background: `${t.color}18`, color: t.color }}
                 >
                   {t.platform}
                 </span>
@@ -235,36 +208,37 @@ const STEPS = [
 
 function HowItWorks() {
   return (
-    <section className="py-24 bg-base">
-      <div className="max-w-6xl mx-auto px-6 space-y-12">
+    <section className="py-20 bg-base">
+      <div className="max-w-content mx-auto px-6 space-y-12">
         <div className="text-center space-y-2">
-          <h2 className="text-3xl font-bold tracking-tight text-text-primary">
+          <h2 className="text-3xl font-medium tracking-tight text-text-primary">
             How it works
           </h2>
           <p className="text-text-secondary">Three steps. Under 60 seconds.</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:items-start">
           {STEPS.map((step, i) => (
-            <div key={step.number} className="relative space-y-4">
-              {/* Connector line on desktop */}
+            <div key={step.number} className="relative flex flex-col gap-4">
+              {/* Connector line — absolute so it doesn't affect flex layout */}
               {i < STEPS.length - 1 && (
                 <div
                   aria-hidden
-                  className="hidden md:block absolute top-6 left-[calc(100%+1px)] w-full h-px bg-border"
-                  style={{ width: 'calc(100% - 48px)', left: '48px', top: '22px' }}
+                  className="hidden md:block absolute h-px bg-border"
+                  style={{ left: '44px', right: 0, top: '22px' }}
                 />
               )}
 
-              <div className="flex items-center gap-4">
-                <div className="w-11 h-11 rounded-xl bg-accent-muted border border-accent/20 flex items-center justify-center flex-shrink-0">
+              {/* Icon row — always starts at the very top of each column */}
+              <div className="flex items-center gap-4 relative z-10">
+                <div className="w-11 h-11 rounded-xl bg-accent-light border border-accent/20 flex items-center justify-center flex-shrink-0">
                   <step.Icon className="w-5 h-5 text-accent" />
                 </div>
                 <span className="text-xs font-mono text-text-disabled">{step.number}</span>
               </div>
 
               <div className="space-y-1">
-                <h3 className="text-lg font-semibold text-text-primary">{step.title}</h3>
+                <h3 className="text-base font-medium text-text-primary">{step.title}</h3>
                 <p className="text-sm text-text-secondary leading-relaxed">{step.body}</p>
               </div>
             </div>
@@ -280,7 +254,7 @@ function HowItWorks() {
 const FAQS = [
   {
     q: 'Will Amazon flag AI-generated listings?',
-    a: "Amazon monitors listings for fabricated specs and promotional language — not AI assistance per se. listlistlist is built around this: it never invents dimensions or unverified claims, and it avoids the phrases Amazon flags (\"best\", \"#1\", \"amazing\"). You still need to review before publishing, and we show a reminder on every Amazon result.",
+    a: "Amazon monitors listings for fabricated specs and promotional language — not AI assistance per se. listlistlist is built around this: it never invents dimensions or unverified claims, and it avoids the phrases Amazon flags. You still need to review before publishing, and we show a reminder on every Amazon result.",
   },
   {
     q: "What if the AI gets the product details wrong?",
@@ -304,32 +278,30 @@ const FAQS = [
   },
 ]
 
+import FaqAccordion from '@/app/faq-accordion'
+
 function FaqSection() {
   return (
-    <section className="py-24 bg-base">
-      <div className="max-w-3xl mx-auto px-6 space-y-10">
+    <section className="py-20 bg-base">
+      <div className="max-w-2xl mx-auto px-6 space-y-10">
         <div className="text-center space-y-2">
-          <h2 className="text-3xl font-bold tracking-tight text-text-primary">
+          <h2 className="text-3xl font-medium tracking-tight text-text-primary">
             Common questions
           </h2>
         </div>
-
         <FaqAccordion items={FAQS} />
       </div>
     </section>
   )
 }
 
-// Client island for accordion interactivity
-import FaqAccordion from '@/app/faq-accordion'
-
 // ─── Bottom CTA ───────────────────────────────────────────────────────────────
 
 function BottomCta() {
   return (
-    <section className="py-24 bg-base">
-      <div className="max-w-2xl mx-auto px-6 text-center space-y-6">
-        <h2 className="text-4xl font-extrabold tracking-tight text-text-primary">
+    <section className="py-20 bg-surface-2">
+      <div className="max-w-xl mx-auto px-6 text-center space-y-6">
+        <h2 className="text-4xl font-medium tracking-tight text-text-primary">
           Stop writing listings by hand.
         </h2>
         <p className="text-text-secondary text-lg">
@@ -338,22 +310,13 @@ function BottomCta() {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link
             href="/sign-up"
-            className="
-              inline-flex items-center gap-2
-              bg-accent hover:bg-accent-hover text-white font-semibold
-              px-8 py-3.5 rounded-lg text-base transition-colors duration-150
-            "
+            className="inline-flex items-center gap-2 bg-[#1A1814] hover:bg-[#2D2A25] text-white font-medium px-8 py-3.5 rounded-lg text-base transition-colors duration-150"
           >
-            <ZapIcon className="w-4 h-4" />
             Start your free trial
           </Link>
           <Link
             href="/pricing"
-            className="
-              inline-flex items-center gap-1.5
-              border border-border-2 hover:border-accent text-text-primary font-medium
-              px-6 py-3.5 rounded-lg text-base transition-colors duration-150
-            "
+            className="inline-flex items-center gap-1.5 border border-border bg-white hover:bg-surface-2 text-text-primary font-medium px-6 py-3.5 rounded-lg text-base transition-colors duration-150 shadow-card"
           >
             See full pricing
           </Link>
@@ -370,9 +333,11 @@ function BottomCta() {
 
 function Footer() {
   return (
-    <footer className="border-t border-border py-8">
-      <div className="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-text-disabled">
-        <span className="font-mono font-bold text-text-secondary">listlistlist</span>
+    <footer className="border-t border-border bg-surface-2 py-8">
+      <div className="max-w-content mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-text-disabled">
+        <Link href="/">
+          <img src="/logo.svg" alt="listlistlist" style={{ height: '28px', width: 'auto', opacity: 0.5 }} />
+        </Link>
         <div className="flex items-center gap-6">
           <Link href="/pricing" className="hover:text-text-secondary transition-colors">Pricing</Link>
           <Link href="/sign-in" className="hover:text-text-secondary transition-colors">Sign in</Link>
@@ -395,11 +360,11 @@ export default function LandingPage() {
       <Testimonials />
       <HowItWorks />
 
-      {/* Pricing preview — abbreviated */}
-      <section className="py-24 bg-base">
-        <div className="max-w-6xl mx-auto px-6 space-y-10">
+      {/* Pricing preview */}
+      <section className="py-20 bg-surface-2">
+        <div className="max-w-content mx-auto px-6 space-y-10">
           <div className="text-center space-y-2">
-            <h2 className="text-3xl font-bold tracking-tight text-text-primary">
+            <h2 className="text-3xl font-medium tracking-tight text-text-primary">
               Simple, transparent pricing
             </h2>
             <p className="text-text-secondary">
@@ -410,7 +375,7 @@ export default function LandingPage() {
           <div className="text-center">
             <Link
               href="/pricing"
-              className="text-sm text-accent hover:text-accent-light transition-colors duration-150"
+              className="text-sm text-accent hover:text-accent-hover transition-colors duration-150"
             >
               See full pricing including top-up packs →
             </Link>

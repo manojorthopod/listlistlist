@@ -472,8 +472,8 @@ export default function GeneratePage() {
           >
             ← Dashboard
           </Link>
-          <Link href="/" className="font-mono font-bold text-text-primary tracking-tight text-lg">
-            listlistlist
+          <Link href="/">
+            <img src="/logo.svg" alt="listlistlist" style={{ height: '40px', width: 'auto' }} />
           </Link>
           <CreditBadge />
         </div>
@@ -484,7 +484,7 @@ export default function GeneratePage() {
         {/* Header */}
         <div className="flex items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-text-primary">
+            <h1 className="text-3xl font-medium tracking-tight text-text-primary">
               Generate listings
             </h1>
             <p className="text-sm text-text-secondary mt-1">
@@ -524,7 +524,7 @@ export default function GeneratePage() {
         {state.step === 'platforms' && (
           <div className="space-y-6">
             <div>
-              <h2 className="text-xl font-semibold text-text-primary">Choose your platforms</h2>
+              <h2 className="text-xl font-medium text-text-primary">Choose your platforms</h2>
               <p className="text-sm text-text-secondary mt-1">
                 Select all platforms you sell on. Each platform uses 1 credit per generation.
               </p>
@@ -553,7 +553,7 @@ export default function GeneratePage() {
               onClick={handlePlatformsContinue}
               disabled={state.selectedPlatforms.length === 0}
               className="
-                w-full bg-accent hover:bg-accent-hover text-white font-semibold
+                w-full bg-accent hover:bg-accent-hover text-white font-medium
                 rounded-lg px-5 py-3 transition-colors duration-150
                 disabled:opacity-40 disabled:cursor-not-allowed
               "
@@ -574,7 +574,7 @@ export default function GeneratePage() {
                 ← Back
               </button>
               <div>
-                <h2 className="text-xl font-semibold text-text-primary">Upload your product photo</h2>
+                <h2 className="text-xl font-medium text-text-primary">Upload your product photo</h2>
                 <p className="text-sm text-text-secondary mt-0.5">
                   A clean, well-lit photo on a plain background gives the best results. JPG, PNG or
                   WebP, max 4 MB.
@@ -596,7 +596,7 @@ export default function GeneratePage() {
                 ← Back
               </button>
               <div>
-                <h2 className="text-xl font-semibold text-text-primary">Analyse image</h2>
+                <h2 className="text-xl font-medium text-text-primary">Analyse image</h2>
                 <p className="text-sm text-text-secondary mt-0.5">
                   We validate your image then extract product details. No credits are used at this stage.
                 </p>
@@ -647,7 +647,7 @@ export default function GeneratePage() {
                 ← Back
               </button>
               <div>
-                <h2 className="text-xl font-semibold text-text-primary">Confirm product details</h2>
+                <h2 className="text-xl font-medium text-text-primary">Confirm product details</h2>
                 <p className="text-sm text-text-secondary mt-0.5">
                   Review and edit the extracted details. Credits are deducted when you confirm.
                 </p>
@@ -669,7 +669,7 @@ export default function GeneratePage() {
           <div className="space-y-6">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <h2 className="text-xl font-semibold text-text-primary">Your listings</h2>
+                <h2 className="text-xl font-medium text-text-primary">Your listings</h2>
                 <p className="text-sm text-text-secondary mt-0.5">
                   Copy any field directly, or use &quot;Copy all&quot; for the full platform export.
                 </p>
@@ -678,8 +678,8 @@ export default function GeneratePage() {
                 onClick={() => dispatch({ type: 'RESET' })}
                 className="
                   inline-flex items-center gap-1.5 flex-shrink-0
-                  border border-border-2 text-text-secondary
-                  hover:text-text-primary hover:border-accent
+                  border border-border hover:border-border-2 text-text-secondary
+                  hover:text-text-primary bg-white
                   px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-150
                 "
               >

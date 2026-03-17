@@ -49,47 +49,38 @@ export default function ReferralWidget() {
   if (error) return null
 
   return (
-    <div className="bg-surface border border-border rounded-xl p-6 space-y-5">
+    <div className="bg-white border border-border rounded-xl p-6 space-y-5 shadow-card">
       <div className="flex items-center gap-3">
-        <div className="w-9 h-9 rounded-lg bg-accent-muted flex items-center justify-center flex-shrink-0">
+        <div className="w-9 h-9 rounded-lg bg-accent-light flex items-center justify-center flex-shrink-0">
           <UsersIcon className="w-4 h-4 text-accent" />
         </div>
         <div>
-          <h3 className="text-base font-semibold text-text-primary">Refer a seller</h3>
+          <h3 className="text-base font-medium text-text-primary">Refer a seller</h3>
           <p className="text-xs text-text-secondary mt-0.5">
             Earn 10 credits for every seller who subscribes using your link
           </p>
         </div>
       </div>
 
-      {/* Stats row */}
       {data && data.totalReferrals > 0 && (
         <div className="grid grid-cols-3 gap-3">
-          <div className="bg-surface-2 rounded-lg p-3 text-center">
-            <div className="text-xl font-bold text-text-primary">{data.totalReferrals}</div>
-            <div className="text-xs text-text-secondary mt-0.5">Referred</div>
-          </div>
-          <div className="bg-surface-2 rounded-lg p-3 text-center">
-            <div className="text-xl font-bold text-success">{data.creditedReferrals}</div>
-            <div className="text-xs text-text-secondary mt-0.5">Subscribed</div>
-          </div>
-          <div className="bg-surface-2 rounded-lg p-3 text-center">
-            <div className="text-xl font-bold text-accent">{data.creditsEarned}</div>
-            <div className="text-xs text-text-secondary mt-0.5">Credits earned</div>
-          </div>
+          {[
+            { value: data.totalReferrals,    label: 'Referred',      color: 'text-text-primary' },
+            { value: data.creditedReferrals, label: 'Subscribed',    color: 'text-success' },
+            { value: data.creditsEarned,     label: 'Credits earned', color: 'text-accent' },
+          ].map(({ value, label, color }) => (
+            <div key={label} className="bg-surface-2 rounded-lg p-3 text-center">
+              <div className={`text-xl font-medium ${color}`}>{value}</div>
+              <div className="text-xs text-text-secondary mt-0.5">{label}</div>
+            </div>
+          ))}
         </div>
       )}
 
-      {/* Link copy */}
       {data ? (
         <div className="flex items-center gap-2">
           <div
-            className="
-              flex-1 min-w-0
-              bg-surface-2 border border-border rounded-lg
-              px-3 py-2 text-xs font-mono text-text-secondary
-              truncate select-all
-            "
+            className="flex-1 min-w-0 bg-surface-2 border border-border rounded-lg px-3 py-2 text-xs font-mono text-text-secondary truncate select-all"
             title={data.referralLink}
           >
             {data.referralLink}
@@ -102,17 +93,16 @@ export default function ReferralWidget() {
               border transition-colors duration-150
               ${copied
                 ? 'border-success text-success bg-success-muted'
-                : 'border-border-2 text-text-secondary hover:text-text-primary hover:border-accent'}
+                : 'border-border hover:border-border-2 text-text-secondary hover:text-text-primary bg-white'}
             `}
           >
             {copied
               ? <><ClipboardCheckIcon className="w-3.5 h-3.5" /> Copied!</>
-              : <><ClipboardIcon className="w-3.5 h-3.5" /> Copy</>
+              : <><ClipboardIcon      className="w-3.5 h-3.5" /> Copy</>
             }
           </button>
         </div>
       ) : (
-        /* Loading skeleton */
         <div className="h-9 rounded-lg bg-surface-2 animate-pulse" />
       )}
 

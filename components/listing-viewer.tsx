@@ -344,8 +344,8 @@ function RegenerateButton({
         <button
           onClick={() => setStatus('idle')}
           className="
-            px-3 py-1.5 rounded-lg text-sm font-medium border border-border-2
-            text-text-secondary hover:text-text-primary transition-colors duration-150
+            px-3 py-1.5 rounded-lg text-sm font-medium border border-border hover:border-border-2
+            bg-white text-text-secondary hover:text-text-primary transition-colors duration-150
           "
         >
           Cancel
@@ -374,8 +374,8 @@ function RegenerateButton({
       disabled={status === 'loading'}
       className="
         inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium
-        border border-border-2 text-text-secondary
-        hover:text-text-primary hover:border-accent
+        border border-border hover:border-border-2 text-text-secondary
+        hover:text-text-primary bg-white
         disabled:opacity-40 disabled:cursor-not-allowed
         transition-colors duration-150
       "
@@ -406,15 +406,15 @@ function ReferralPrompt({ referralCode }: { referralCode: string | null }) {
   const url = `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://listlistlist.com'}/?ref=${referralCode}`
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border border-border bg-surface p-5">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border border-border bg-white p-5 shadow-card">
       <div className="flex items-center gap-3">
-        <div className="w-9 h-9 rounded-lg bg-accent-muted flex items-center justify-center flex-shrink-0">
+        <div className="w-9 h-9 rounded-lg bg-accent-light flex items-center justify-center flex-shrink-0">
           <UsersIcon className="w-4 h-4 text-accent" />
         </div>
         <div>
-          <p className="text-sm font-semibold text-text-primary">Know another seller?</p>
+          <p className="text-sm font-medium text-text-primary">Know another seller?</p>
           <p className="text-xs text-text-secondary mt-0.5">
-            Share ListListList and earn 10 free credits when they subscribe.
+            Share listlistlist and earn 10 free credits when they subscribe.
           </p>
         </div>
       </div>
@@ -425,7 +425,7 @@ function ReferralPrompt({ referralCode }: { referralCode: string | null }) {
         className="
           flex-shrink-0 inline-flex items-center gap-1.5
           bg-accent hover:bg-accent-hover text-white
-          px-4 py-2 rounded-lg text-sm font-semibold
+          px-4 py-2 rounded-lg text-sm font-medium
           transition-colors duration-150
         "
       >
@@ -484,7 +484,7 @@ export default function ListingViewer({
   return (
     <div className="space-y-6">
       {/* Tab bar */}
-      <div className="bg-surface border-b border-border flex overflow-x-auto">
+      <div className="bg-white border border-border rounded-lg flex overflow-x-auto">
         {platforms.map((p) => {
           const meta     = PLATFORM_META[p]
           const isActive = activeTab === p

@@ -114,11 +114,11 @@ export default function PlatformToggleCard({
       type="button"
       onClick={() => onToggle(platform)}
       className={`
-        relative w-full text-left p-4 rounded-xl border
+        relative w-full text-left p-4 rounded-xl border shadow-card
         transition-all duration-150 cursor-pointer
         ${selected
           ? meta.activeBg
-          : `bg-surface border-border ${meta.hoverBorder} ${meta.hoverShadow}`}
+          : `bg-white border-border ${meta.hoverBorder} hover:shadow-card-hover`}
       `}
     >
       <div className="flex items-start gap-3">
@@ -131,7 +131,7 @@ export default function PlatformToggleCard({
               className={`
                 w-4 h-4 rounded border flex-shrink-0 flex items-center justify-center
                 transition-colors duration-150
-                ${selected ? 'border-0' : 'border-border-2 bg-surface-2'}
+                ${selected ? 'border-0' : 'border-border bg-surface-2'}
               `}
               style={selected ? { background: meta.color } : {}}
             >

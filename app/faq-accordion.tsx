@@ -24,7 +24,7 @@ export default function FaqAccordion({ items }: { items: FaqItem[] }) {
                 py-5 text-left transition-colors duration-150
               "
             >
-              <span className={`text-sm font-semibold ${isOpen ? 'text-text-primary' : 'text-text-secondary hover:text-text-primary'} transition-colors`}>
+              <span className={`text-sm font-medium ${isOpen ? 'text-text-primary' : 'text-text-secondary hover:text-text-primary'} transition-colors`}>
                 {item.q}
               </span>
               {isOpen

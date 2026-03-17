@@ -237,7 +237,7 @@ export default function DemoSection() {
   }, [handleFile])
 
   return (
-    <div className="bg-surface border border-border rounded-2xl overflow-hidden">
+    <div className="bg-white border border-border rounded-2xl overflow-hidden shadow-card">
       <div className="p-6 sm:p-8 space-y-6">
 
         {/* Header */}
@@ -245,7 +245,7 @@ export default function DemoSection() {
           <p className="text-xs text-text-secondary uppercase tracking-widest font-medium">
             Try it now — no sign-up required
           </p>
-          <h3 className="text-lg font-semibold text-text-primary">
+          <h3 className="text-lg font-medium text-text-primary">
             Click a product to see real AI-generated copy
           </h3>
         </div>
@@ -277,11 +277,11 @@ export default function DemoSection() {
                   alt={sample.label}
                   className="w-full aspect-square object-cover"
                 />
-                <div className="absolute inset-0 bg-base/40 group-hover:bg-base/20 transition-colors duration-150" />
+                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-150" />
 
                 {/* Loading overlay */}
                 {isLoading && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-base/60">
+                  <div className="absolute inset-0 flex items-center justify-center bg-white/60">
                     <div
                       className="w-6 h-6 rounded-full border-2 border-t-transparent animate-spin"
                       style={{ borderColor: '#F1641E40', borderTopColor: 'transparent' }}
@@ -289,8 +289,8 @@ export default function DemoSection() {
                   </div>
                 )}
 
-                <div className="absolute bottom-0 inset-x-0 p-2 bg-gradient-to-t from-base/80 to-transparent">
-                  <p className="text-xs font-medium text-text-primary text-center">
+                <div className="absolute bottom-0 inset-x-0 p-2 bg-gradient-to-t from-black/50 to-transparent">
+                  <p className="text-xs font-medium text-white text-center">
                     {sample.label}
                   </p>
                 </div>

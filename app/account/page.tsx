@@ -73,7 +73,7 @@ function PlanCard({ user }: { user: User }) {
         <div className="w-9 h-9 rounded-lg bg-accent-muted flex items-center justify-center flex-shrink-0">
           <ZapIcon className="w-4 h-4 text-accent" />
         </div>
-        <h2 className="text-base font-semibold text-text-primary">Plan &amp; billing</h2>
+        <h2 className="text-base font-medium text-text-primary">Plan &amp; billing</h2>
       </div>
 
       {/* Plan badge */}
@@ -129,7 +129,7 @@ function PlanCard({ user }: { user: User }) {
             href="/pricing"
             className="
               inline-flex items-center gap-2
-              bg-accent hover:bg-accent-hover text-white font-semibold
+              bg-accent hover:bg-accent-hover text-white font-medium
               rounded-lg px-4 py-2.5 text-sm
               transition-colors duration-150
             "
@@ -160,7 +160,7 @@ function CreditsCard({ user }: { user: User }) {
           <CoinsIcon className="w-4 h-4 text-accent" />
         </div>
         <div>
-          <h2 className="text-base font-semibold text-text-primary">Credits</h2>
+          <h2 className="text-base font-medium text-text-primary">Credits</h2>
           <p className="text-xs text-text-secondary mt-0.5">{total} total available</p>
         </div>
       </div>
@@ -241,7 +241,7 @@ function Section({
         <div className="w-9 h-9 rounded-lg bg-surface-2 flex items-center justify-center flex-shrink-0 text-text-secondary">
           {icon}
         </div>
-        <h2 className="text-base font-semibold text-text-primary">{title}</h2>
+        <h2 className="text-base font-medium text-text-primary">{title}</h2>
       </div>
       {children}
     </div>
@@ -267,8 +267,8 @@ export default async function AccountPage() {
       {/* ── Navigation ──────────────────────────────────────────────────────── */}
       <nav className="border-b border-border bg-surface sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between gap-4">
-          <Link href="/" className="font-mono font-bold text-text-primary tracking-tight text-lg">
-            listlistlist
+          <Link href="/">
+            <img src="/logo.svg" alt="listlistlist" style={{ height: '40px', width: 'auto' }} />
           </Link>
           <div className="flex items-center gap-3">
             <Link
@@ -293,7 +293,7 @@ export default async function AccountPage() {
 
         {/* ── Page header ──────────────────────────────────────────────────── */}
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-text-primary">Account</h1>
+          <h1 className="text-3xl font-medium tracking-tight text-text-primary">Account</h1>
           <p className="text-text-secondary text-sm mt-1">{user.email}</p>
         </div>
 

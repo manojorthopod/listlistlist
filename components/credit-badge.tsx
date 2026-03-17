@@ -16,7 +16,6 @@ export default function CreditBadge() {
       .catch(() => {})
   }, [])
 
-  // Close dropdown on outside click
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
@@ -38,14 +37,13 @@ export default function CreditBadge() {
         className="
           flex items-center gap-1.5 px-3 py-1.5 rounded-lg
           border border-border hover:border-border-2
-          bg-surface transition-colors duration-150
+          bg-white shadow-card transition-colors duration-150
           text-sm
         "
         aria-label="Credit balance"
       >
-        {/* Monthly dot */}
         <span className="w-1.5 h-1.5 rounded-full bg-accent flex-shrink-0" />
-        <span className={isLow ? 'text-warning font-semibold' : 'text-text-primary font-medium'}>
+        <span className={isLow ? 'text-warning font-medium' : 'text-text-primary font-medium'}>
           {balance.subscriptionCredits}
         </span>
         <span className="text-text-disabled">monthly</span>
@@ -60,16 +58,15 @@ export default function CreditBadge() {
         )}
       </button>
 
-      {/* Dropdown */}
       {open && (
         <div
           className="
             absolute right-0 top-full mt-2 w-64
-            bg-surface-2 border border-border-2 rounded-xl shadow-lg p-4
+            bg-white border border-border rounded-xl shadow-card-hover p-4
             z-50 space-y-3
           "
         >
-          <p className="text-xs text-text-secondary uppercase tracking-widest font-medium">
+          <p className="text-xs text-text-disabled uppercase tracking-widest font-medium">
             Credit balance
           </p>
 
@@ -79,7 +76,7 @@ export default function CreditBadge() {
                 <span className="w-2 h-2 rounded-full bg-accent" />
                 <span className="text-text-secondary">Monthly</span>
               </div>
-              <span className={`text-sm font-semibold ${isLow ? 'text-warning' : 'text-text-primary'}`}>
+              <span className={`text-sm font-medium ${isLow ? 'text-warning' : 'text-text-primary'}`}>
                 {balance.subscriptionCredits}
               </span>
             </div>
@@ -90,7 +87,7 @@ export default function CreditBadge() {
                   <span className="w-2 h-2 rounded-full bg-text-secondary" />
                   <span className="text-text-secondary">Top-up</span>
                 </div>
-                <span className="text-sm font-semibold text-text-primary">
+                <span className="text-sm font-medium text-text-primary">
                   {balance.topupCredits}
                 </span>
               </div>
@@ -98,12 +95,12 @@ export default function CreditBadge() {
 
             <div className="border-t border-border pt-2 flex items-center justify-between">
               <span className="text-sm text-text-secondary">Total</span>
-              <span className="text-sm font-bold text-text-primary">{balance.totalCredits}</span>
+              <span className="text-sm font-medium text-text-primary">{balance.totalCredits}</span>
             </div>
           </div>
 
           {balance.creditsResetAt && (
-            <p className="text-xs text-text-secondary">
+            <p className="text-xs text-text-disabled">
               Resets{' '}
               {new Date(balance.creditsResetAt).toLocaleDateString('en-GB', {
                 day: 'numeric', month: 'short',
@@ -121,7 +118,7 @@ export default function CreditBadge() {
             href="/account"
             className="
               flex items-center justify-center gap-1.5 w-full
-              bg-accent hover:bg-accent-hover text-white text-sm font-semibold
+              bg-[#1A1814] hover:bg-[#2D2A25] text-white text-sm font-medium
               rounded-lg px-3 py-2 transition-colors duration-150
             "
             onClick={() => setOpen(false)}

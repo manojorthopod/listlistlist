@@ -70,7 +70,7 @@ export default function CopyButton({
         transition-colors duration-150
         ${copied
           ? 'border-success text-success bg-success-muted'
-          : 'border-border-2 text-text-secondary hover:text-text-primary hover:border-accent'}
+          : 'border-border hover:border-border-2 text-text-secondary hover:text-text-primary bg-white'}
         ${className}
       `}
     >

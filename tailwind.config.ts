@@ -6,32 +6,32 @@ const config: Config = {
     extend: {
       colors: {
         // Backgrounds
-        'base':        '#0A0A0F',
-        'surface':     '#13131A',
-        'surface-2':   '#1C1C28',
-        'border':      '#222230',
-        'border-2':    '#2E2E42',
+        'base':        '#FAFAF8',
+        'surface':     '#FFFFFF',
+        'surface-2':   '#F4F3F0',
+        'border':      '#E8E6E1',
+        'border-2':    '#D4D1CB',
 
-        // Brand accent
-        'accent':       '#7C3AED',
-        'accent-hover': '#6D28D9',
-        'accent-light': '#8B5CF6',
-        'accent-muted': '#7C3AED26',
+        // Brand accent — violet, slightly muted from the dark-mode version
+        'accent':       '#5B4FE8',
+        'accent-hover': '#4A3FD4',
+        'accent-light': '#EEF0FF',
+        'accent-muted': '#EEF0FF',
 
         // Text
-        'text-primary':   '#F8F8FF',
-        'text-secondary': '#8888AA',
-        'text-disabled':  '#44445A',
+        'text-primary':   '#1A1814',
+        'text-secondary': '#6B6760',
+        'text-disabled':  '#A8A49E',
 
         // Semantic
-        'success':       '#10B981',
-        'success-muted': '#10B98120',
-        'warning':       '#F59E0B',
-        'warning-muted': '#F59E0B20',
-        'error':         '#F43F5E',
-        'error-muted':   '#F43F5E20',
+        'success':       '#3D9970',
+        'success-muted': '#E8F5EE',
+        'warning':       '#E8A838',
+        'warning-muted': '#FEF6E8',
+        'error':         '#D94F4F',
+        'error-muted':   '#FDEFEE',
 
-        // Platform accent colours
+        // Platform accent colours — unchanged, used subtly
         'platform-amazon':  '#FF9900',
         'platform-etsy':    '#F1641E',
         'platform-ebay':    '#E53238',
@@ -42,6 +42,17 @@ const config: Config = {
       fontFamily: {
         sans: ['var(--font-geist-sans)', 'Inter', 'sans-serif'],
         mono: ['var(--font-geist-mono)', 'JetBrains Mono', 'monospace'],
+      },
+      fontSize: {
+        base: ['15px', { lineHeight: '1.6' }],
+      },
+      boxShadow: {
+        'card':       '0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)',
+        'card-hover': '0 4px 12px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.06)',
+        'focus':      '0 0 0 3px rgba(91,79,232,0.12)',
+      },
+      maxWidth: {
+        'content': '1100px',
       },
     },
   },

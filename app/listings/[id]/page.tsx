@@ -90,8 +90,8 @@ export default async function ListingDetailPage({
       {/* ── Navigation ───────────────────────────────────────────────────────── */}
       <nav className="border-b border-border bg-surface sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between gap-4">
-          <Link href="/" className="font-mono font-bold text-text-primary tracking-tight text-lg">
-            listlistlist
+          <Link href="/">
+            <img src="/logo.svg" alt="listlistlist" style={{ height: '40px', width: 'auto' }} />
           </Link>
           <div className="flex items-center gap-3">
             <Link
@@ -141,7 +141,7 @@ export default async function ListingDetailPage({
           {/* Meta */}
           <div className="flex-1 min-w-0 space-y-3">
             <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-2xl font-bold tracking-tight text-text-primary">
+              <h1 className="text-2xl font-medium tracking-tight text-text-primary">
                 {listing.extracted_data?.product_type ?? 'Product listing'}
               </h1>
               <StatusPill status={listing.status} />

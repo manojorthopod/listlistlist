@@ -28,7 +28,7 @@ const PLANS = [
     trialBadge:   null,
     credits:      '50 credits/month',
     features:     ['All 6 platforms', 'Credits roll over (cap: 100)', 'Top-up packs available'],
-    cta:          'Start Starter',
+    cta:          'Get Starter',
     href:         '/sign-up',
     highlight:    false,
   },
@@ -41,7 +41,7 @@ const PLANS = [
     trialBadge:   null,
     credits:      '1,000 credits/month',
     features:     ['All 6 platforms', 'Credits roll over (cap: 2,000)', 'Priority generation', 'Bulk upload — coming soon'],
-    cta:          'Start Pro',
+    cta:          'Get Pro',
     href:         '/sign-up',
     highlight:    true,
   },
@@ -58,7 +58,7 @@ export default function PricingPreview() {
       </div>
 
       {/* Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         {PLANS.map((plan) => {
           const price = plan.monthly === null
             ? null
@@ -72,35 +72,35 @@ export default function PricingPreview() {
             <div
               key={plan.id}
               className={`
-                rounded-xl border p-6 space-y-5 flex flex-col
+                rounded-xl p-6 space-y-5 flex flex-col shadow-card
                 ${plan.highlight
-                  ? 'border-accent bg-accent-muted'
-                  : 'border-border bg-surface'}
+                  ? 'border border-border border-t-[3px] border-t-accent bg-white'
+                  : 'border border-border bg-surface'}
               `}
             >
               {plan.highlight && (
-                <span className="self-start text-xs font-semibold bg-accent text-white px-2.5 py-1 rounded-full">
+                <span className="self-start text-xs font-medium bg-accent text-white px-2.5 py-1 rounded-full">
                   Most popular
                 </span>
               )}
 
               <div>
-                <h3 className="text-lg font-bold text-text-primary">{plan.name}</h3>
+                <h3 className="text-lg font-medium text-text-primary">{plan.name}</h3>
                 <div className="mt-2">
                   {price !== null ? (
                     <div className="flex items-baseline gap-1">
-                      <span className="text-3xl font-extrabold text-text-primary">£{price}</span>
+                      <span className="text-3xl font-medium text-text-primary">£{price}</span>
                       <span className="text-text-secondary text-sm">
                         /{interval === 'annual' ? 'year' : 'month'}
                       </span>
                       {saving && (
-                        <span className="ml-2 text-xs font-semibold text-success">
+                        <span className="ml-2 text-xs font-medium text-success">
                           save £{saving}
                         </span>
                       )}
                     </div>
                   ) : (
-                    <span className="text-2xl font-extrabold text-text-primary">
+                    <span className="text-2xl font-medium text-text-primary">
                       {plan.trialBadge}
                     </span>
                   )}
@@ -120,11 +120,11 @@ export default function PricingPreview() {
               <Link
                 href={plan.href}
                 className={`
-                  w-full text-center font-semibold rounded-lg px-4 py-2.5 text-sm
+                  w-full text-center font-medium rounded-lg px-4 py-2.5 text-sm
                   transition-colors duration-150
                   ${plan.highlight
                     ? 'bg-accent hover:bg-accent-hover text-white'
-                    : 'border border-border-2 hover:border-accent text-text-primary'}
+                    : 'bg-[#1A1814] hover:bg-[#2D2A25] text-white'}
                 `}
               >
                 {plan.cta}
