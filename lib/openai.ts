@@ -48,7 +48,8 @@ export function getProClient(): OpenAI {
 export function buildImageMessages(
   systemPrompt: string,
   userPrompt:   string,
-  imageUrl:     string
+  imageUrl:     string,
+  detail:       'low' | 'high' | 'auto' = 'high'
 ): OpenAI.Chat.Completions.ChatCompletionMessageParam[] {
   return [
     { role: 'system', content: systemPrompt },
@@ -58,8 +59,8 @@ export function buildImageMessages(
         {
           type: 'image_url',
           image_url: {
-            url:    imageUrl,
-            detail: 'high',
+            url: imageUrl,
+            detail,
           },
         },
         { type: 'text', text: userPrompt },

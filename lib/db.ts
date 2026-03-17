@@ -21,12 +21,48 @@ function getSupabaseServiceClient() {
     )
   }
 
+  // Supabase service role keys are JWTs — they always start with "eyJ".
+  // If this warning appears, go to Supabase Dashboard → Settings → API
+  // and copy the "service_role" key (not the anon key, not a personal token).
+  if (!key.startsWith('eyJ')) {
+    console.warn(
+      '[db] SUPABASE_SERVICE_ROLE_KEY does not look like a JWT (expected it to start with "eyJ"). ' +
+      'All database queries will fail with 401 until you copy the correct service_role key ' +
+      'from Supabase Dashboard → Project Settings → API → service_role.'
+    )
+  }
+
   return createClient(url, key, {
     auth: { persistSession: false },
   })
 }
 
 export const db = getSupabaseServiceClient()
+
+// ─── Query timeout helper ──────────────────────────────────────────────────────
+// Races a promise against a timeout. Returns null (not an exception) if the
+// timeout fires first, so callers can handle the degraded state gracefully.
+export async function withTimeout<T>(
+  promise: Promise<T>,
+  ms: number,
+  label: string
+): Promise<T | null> {
+  return Promise.race([
+    promise.catch((err: unknown) => {
+      console.error(
+        `[db] ${label} failed:`,
+        err instanceof Error ? err.message : err
+      )
+      return null
+    }),
+    new Promise<null>((resolve) =>
+      setTimeout(() => {
+        console.warn(`[db] ${label} timed out after ${ms}ms`)
+        resolve(null)
+      }, ms)
+    ),
+  ])
+}
 
 // ─── Type-safe database helpers ───────────────────────────────────────────────
 

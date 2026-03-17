@@ -4,12 +4,37 @@ import { getMiniClient, MODEL_MINI, buildImageMessages } from '@/lib/openai'
 import { getDemoRunCounts, logDemoRun } from '@/lib/db'
 
 // ─── Sample product image URLs ────────────────────────────────────────────────
-// Reliable Unsplash CDN images for the three hardcoded samples.
+// These are fetched server-side and sent to OpenAI as base64 data URIs.
+// OpenAI's vision API does not reliably follow CDN redirects, so we proxy the
+// bytes ourselves rather than handing the URL directly to the model.
 
 const SAMPLE_URLS: Record<'mug' | 'wallet' | 'candle', string> = {
-  mug:    'https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?w=600&q=80',
-  wallet: 'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=600&q=80',
-  candle: 'https://images.unsplash.com/photo-1602028915047-37269d1a73f7?w=600&q=80',
+  mug:    'https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?w=600&q=80&fm=jpg&fit=crop',
+  wallet: 'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=600&q=80&fm=jpg&fit=crop',
+  candle: 'https://images.unsplash.com/photo-1602028915047-37269d1a73f7?w=600&q=80&fm=jpg&fit=crop',
+}
+
+// ─── Image → base64 data URI ──────────────────────────────────────────────────
+// Fetches a remote image and returns a base64-encoded data URI string.
+// Used for the hardcoded sample images so OpenAI receives image bytes
+// directly instead of a potentially-redirecting external URL.
+
+async function fetchAsDataUri(url: string): Promise<string> {
+  const res = await fetch(url, {
+    headers: {
+      // Mimic a browser Accept header so CDNs serve a real image
+      Accept: 'image/jpeg,image/png,image/webp,image/*',
+    },
+    // Follow redirects (Node 18+ fetch does this by default, explicit here)
+    redirect: 'follow',
+  })
+  if (!res.ok) {
+    throw new Error(`Failed to fetch sample image (${res.status} ${res.statusText}): ${url}`)
+  }
+  const contentType = res.headers.get('content-type') ?? 'image/jpeg'
+  const buffer      = await res.arrayBuffer()
+  const base64      = Buffer.from(buffer).toString('base64')
+  return `data:${contentType};base64,${base64}`
 }
 
 // ─── Input schema ─────────────────────────────────────────────────────────────
@@ -103,7 +128,20 @@ export async function POST(req: Request) {
     )
   }
 
-  const imageUrl = parsed.data.imageUrl ?? SAMPLE_URLS[parsed.data.sampleProduct!]
+  // For sample products, fetch the image server-side and convert to a base64
+  // data URI so OpenAI receives bytes directly and isn't affected by CDN redirects.
+  // For user-uploaded images the UploadThing CDN URL is passed through as-is.
+  let imageUrl: string
+  if (parsed.data.sampleProduct) {
+    try {
+      imageUrl = await fetchAsDataUri(SAMPLE_URLS[parsed.data.sampleProduct])
+    } catch (err) {
+      console.error('[api/demo] Failed to fetch sample image:', err instanceof Error ? err.message : err)
+      return Response.json({ error: 'Could not load sample image. Please try again.' }, { status: 500 })
+    }
+  } else {
+    imageUrl = parsed.data.imageUrl!
+  }
 
   // ── IP rate limiting ─────────────────────────────────────────────────────────
   const ip     = getClientIp(req)
@@ -142,7 +180,7 @@ export async function POST(req: Request) {
       model:       MODEL_MINI,
       max_tokens:  150,
       temperature: 0,
-      messages:    buildImageMessages(VALIDATION_SYSTEM, VALIDATION_USER, imageUrl),
+      messages:    buildImageMessages(VALIDATION_SYSTEM, VALIDATION_USER, imageUrl, 'low'),
     })
 
     const validationRaw  = validationCompletion.choices[0]?.message?.content ?? null
@@ -158,7 +196,9 @@ export async function POST(req: Request) {
       )
     }
   } catch (err) {
-    console.error('[api/demo] Validation error:', err)
+    const message = err instanceof Error ? err.message : String(err)
+    const status  = (err as { status?: number }).status
+    console.error('[api/demo] Validation error — OpenAI call failed:', { message, status, err })
     return Response.json({ error: 'Image analysis failed. Please try again.' }, { status: 500 })
   }
 
@@ -169,7 +209,7 @@ export async function POST(req: Request) {
       model:       MODEL_MINI,
       max_tokens:  400,
       temperature: 0,
-      messages:    buildImageMessages(EXTRACTION_SYSTEM, EXTRACTION_USER, imageUrl),
+      messages:    buildImageMessages(EXTRACTION_SYSTEM, EXTRACTION_USER, imageUrl, 'low'),
     })
 
     const extractRaw  = extractCompletion.choices[0]?.message?.content ?? null
@@ -177,7 +217,8 @@ export async function POST(req: Request) {
 
     productSummary = extractData ? JSON.stringify(extractData) : 'A physical product'
   } catch (err) {
-    console.error('[api/demo] Extraction error:', err)
+    const message = err instanceof Error ? err.message : String(err)
+    console.error('[api/demo] Extraction error:', { message, err })
     productSummary = 'A physical product'
   }
 
@@ -204,7 +245,8 @@ export async function POST(req: Request) {
       }
     }
   } catch (err) {
-    console.error('[api/demo] Etsy generation error:', err)
+    const message = err instanceof Error ? err.message : String(err)
+    console.error('[api/demo] Etsy generation error:', { message, err })
   }
 
   if (!etsyPreview) {

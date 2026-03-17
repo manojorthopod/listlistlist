@@ -13,6 +13,7 @@ export default function SignUpPage() {
           </p>
         </div>
         <SignUp
+          fallbackRedirectUrl="/dashboard"
           appearance={{
             variables: {
               colorBackground:       '#13131A',

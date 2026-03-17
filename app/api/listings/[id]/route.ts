@@ -65,7 +65,7 @@ export async function PATCH(
     await updateListing(id, {
       generated_listings: merged,
       status:             'completed',
-    })
+    }, userId)
     return Response.json({ ok: true, generated_listings: merged })
   } catch (err) {
     console.error('[api/listings/[id]] PATCH error:', err)

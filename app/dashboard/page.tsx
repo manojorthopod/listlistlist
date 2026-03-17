@@ -1,9 +1,9 @@
-import { auth } from '@clerk/nextjs/server'
+import { auth, currentUser } from '@clerk/nextjs/server'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { ZapIcon, CoinsIcon, PlusIcon } from 'lucide-react'
-import { getUserById, getListingsByUser } from '@/lib/db'
+import { getUserById, upsertUser, getListingsByUser, withTimeout } from '@/lib/db'
 import { PLAN_ROLLOVER_CAP } from '@/types'
 import { isValidReferralCode } from '@/lib/referral'
 import CreditBadge from '@/components/credit-badge'
@@ -199,12 +199,78 @@ export default async function DashboardPage() {
   // Only pass a code that passes our format check — never forward arbitrary cookie values
   const pendingReferralCode = rawRefCode && isValidReferralCode(rawRefCode) ? rawRefCode : null
 
-  const [user, listings] = await Promise.all([
-    getUserById(userId),
-    getListingsByUser(userId, 0, 10),
-  ])
+  const DB_TIMEOUT = 5000
 
-  if (!user) redirect('/sign-in')
+  const [initialUser, listings] = await Promise.all([
+    withTimeout(getUserById(userId),           DB_TIMEOUT, 'getUserById'),
+    withTimeout(getListingsByUser(userId, 0, 10), DB_TIMEOUT, 'getListingsByUser'),
+  ])
+  let user = initialUser
+
+  // The Clerk webhook may not have fired yet in local development (webhooks
+  // require a public tunnel like ngrok to reach localhost). If the Supabase
+  // row doesn't exist yet, create it on-the-fly so the user isn't stuck in a
+  // redirect loop. In production the webhook will have already created the row
+  // by the time the user reaches the dashboard, so this is a no-op there.
+  if (!user) {
+    const clerkUser = await withTimeout(
+      currentUser(),
+      DB_TIMEOUT,
+      'currentUser'
+    )
+    if (!clerkUser) redirect('/sign-in')
+
+    const email =
+      clerkUser.emailAddresses.find(
+        (e) => e.id === clerkUser.primaryEmailAddressId
+      )?.emailAddress ??
+      clerkUser.emailAddresses[0]?.emailAddress ??
+      ''
+
+    try {
+      user = await withTimeout(
+        upsertUser(userId, email),
+        DB_TIMEOUT,
+        'upsertUser'
+      )
+    } catch (err) {
+      console.error('[dashboard] Failed to create user row on-the-fly:', err)
+      // Do NOT redirect('/sign-in') here — if the DB is unreachable that
+      // creates an infinite redirect loop (Clerk sends the user back to
+      // /dashboard, which hits the DB again, fails, redirects, repeat).
+    }
+  }
+
+  // If user is still null after the fallback (DB unreachable / wrong key),
+  // show an actionable error page rather than looping.
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-base flex items-center justify-center px-6">
+        <div className="max-w-md w-full bg-surface border border-error rounded-xl p-8 space-y-4 text-center">
+          <div className="w-12 h-12 rounded-full bg-error-muted border border-error flex items-center justify-center mx-auto">
+            <span className="text-error text-xl font-bold">!</span>
+          </div>
+          <h1 className="text-xl font-semibold text-text-primary">
+            Database connection error
+          </h1>
+          <p className="text-sm text-text-secondary leading-relaxed">
+            We couldn&apos;t load your account data. This usually means the
+            Supabase service role key in <code className="text-accent">.env.local</code> is
+            incorrect. Copy the <strong>service_role</strong> key (starts with{' '}
+            <code className="text-accent">eyJ</code>) from{' '}
+            <strong>Supabase Dashboard → Project Settings → API</strong> and
+            restart the dev server.
+          </p>
+          <a
+            href="/dashboard"
+            className="inline-flex items-center justify-center w-full bg-accent hover:bg-accent-hover text-white font-semibold rounded-lg px-4 py-2.5 text-sm transition-colors duration-150"
+          >
+            Try again
+          </a>
+        </div>
+      </div>
+    )
+  }
 
   const daysLeft = trialDaysRemaining(user)
 
