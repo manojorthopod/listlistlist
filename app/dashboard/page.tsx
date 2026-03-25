@@ -202,8 +202,8 @@ export default async function DashboardPage() {
   const DB_TIMEOUT = 5000
 
   const [initialUser, listings] = await Promise.all([
-    withTimeout(getUserById(userId),           DB_TIMEOUT, 'getUserById'),
-    withTimeout(getListingsByUser(userId, 0, 10), DB_TIMEOUT, 'getListingsByUser'),
+    withTimeout(getUserById(userId), DB_TIMEOUT, 'getUserById'),
+    getListingsByUser(userId, 0, 10),
   ])
   let user = initialUser
 

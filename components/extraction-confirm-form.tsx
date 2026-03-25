@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, KeyboardEvent } from 'react'
-import { XIcon, SlidersHorizontalIcon } from 'lucide-react'
+import { XIcon, SlidersHorizontalIcon, AlertCircleIcon } from 'lucide-react'
 import type { ExtractedProduct, Platform } from '@/types'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -173,6 +173,10 @@ export function ExtractionConfirmForm({
   }), [productType, material, color, dimensions, style, keyFeatures, condition,
        targetAudience, brandVoice, initialData.suggested_category])
 
+  const showManualEntryBanner =
+    initialData.extraction_incomplete === true ||
+    (initialData.manual_entry_hint != null && initialData.manual_entry_hint.length > 0)
+
   // ── Save brand voice to user profile ──────────────────────────────────────
   async function handleSaveBrandVoice() {
     if (!brandVoice.trim() || savingVoice) return
@@ -213,6 +217,22 @@ export function ExtractionConfirmForm({
         </p>
       </div>
 
+      {showManualEntryBanner && (
+        <div
+          role="status"
+          className="flex gap-3 rounded-xl border border-warning bg-warning-muted p-4 text-sm text-text-primary"
+        >
+          <AlertCircleIcon className="w-5 h-5 shrink-0 text-warning" aria-hidden />
+          <div className="space-y-1">
+            <p className="font-medium text-text-primary">Add product details manually</p>
+            <p className="text-text-secondary leading-relaxed">
+              {initialData.manual_entry_hint ??
+                'Enter the product name and any key details you know — large items and vehicles often need seller-provided specifics.'}
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
 
         {/* Product type */}
@@ -222,7 +242,7 @@ export function ExtractionConfirmForm({
               type="text"
               value={productType}
               onChange={(e) => setProductType(e.target.value)}
-              placeholder="e.g. Ceramic mug, Leather wallet"
+              placeholder="e.g. Oak dining table, 2018 estate car, OEM brake caliper"
               required
               disabled={disabled}
               className={inputCls}

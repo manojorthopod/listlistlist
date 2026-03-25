@@ -26,10 +26,22 @@ function checkRateLimit(userId: string): boolean {
 // ─── Prompts ──────────────────────────────────────────────────────────────────
 
 const SYSTEM_PROMPT = `You are an image validation assistant for an e-commerce listing tool. \
-Determine whether the uploaded image is suitable for generating a product listing.`
+Your job is to accept images that show something a seller could realistically list for sale. \
+Err on the side of acceptance: if the subject could be sold online (new or used), treat it as valid. \
+Only reject images that are clearly unsuitable (no sellable subject, extreme blur, pure scenery with no product, etc.).`
 
-const USER_PROMPT = `Does this image contain a single, clearly identifiable physical product \
-suitable for an e-commerce listing? Return ONLY valid JSON with no commentary:
+const USER_PROMPT = `Does this image show something that could be sold as a product listing (new or used)?
+
+ACCEPT (non-exhaustive): consumer goods, apparel, shoes, bags, electronics, home goods, \
+furniture (sofas, tables, chairs, beds, storage), vehicles (cars, motorcycles, vans), \
+vehicle parts and accessories (wheels, seats, bumpers, lights), large appliances, industrial \
+or commercial equipment if clearly a sellable item, collectibles, and similar — including when \
+only part of a large item is visible if it is still identifiable as merchandise.
+
+Be permissive: a single main sellable subject (or one clearly framed vehicle/piece of furniture) counts as valid. \
+Reject mainly when there is no identifiable sellable item, the frame is unusable, or the image is not a real photo of a physical thing.
+
+Return ONLY valid JSON with no commentary:
 {
   "is_valid_product": boolean,
   "reason": "string — one sentence. If invalid, explain clearly."
@@ -92,7 +104,7 @@ export async function POST(req: Request) {
   try {
     const completion = await getMiniClient().chat.completions.create({
       model:       MODEL_MINI,
-      max_tokens:  150,
+      max_tokens:  220,
       temperature: 0,     // deterministic — we need a reliable yes/no
       messages:    buildImageMessages(SYSTEM_PROMPT, USER_PROMPT, imageUrl),
     })

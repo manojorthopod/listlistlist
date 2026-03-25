@@ -64,6 +64,9 @@ export async function withTimeout<T>(
   ])
 }
 
+/** Server-side cap for paginated listing fetches (dashboard, etc.). */
+export const GET_LISTINGS_BY_USER_TIMEOUT_MS = 15_000
+
 // ─── Type-safe database helpers ───────────────────────────────────────────────
 
 // Users
@@ -174,15 +177,39 @@ export async function getListingsByUser(
   page = 0,
   pageSize = 10
 ): Promise<Listing[]> {
-  const { data, error } = await db
-    .from('listings')
-    .select('*')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false })
-    .range(page * pageSize, page * pageSize + pageSize - 1)
+  let settled = false
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => {
+      if (settled) return
+      settled = true
+      console.warn(
+        `[db] getListingsByUser timed out after ${GET_LISTINGS_BY_USER_TIMEOUT_MS}ms`
+      )
+      resolve([])
+    }, GET_LISTINGS_BY_USER_TIMEOUT_MS)
 
-  if (error) throw new Error(`Failed to fetch listings: ${error.message}`)
-  return (data ?? []) as Listing[]
+    void (async () => {
+      try {
+        const { data, error } = await db
+          .from('listings')
+          .select('*')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false })
+          .range(page * pageSize, page * pageSize + pageSize - 1)
+
+        if (error) throw new Error(`Failed to fetch listings: ${error.message}`)
+        if (settled) return
+        settled = true
+        clearTimeout(t)
+        resolve((data ?? []) as Listing[])
+      } catch (err) {
+        if (settled) return
+        settled = true
+        clearTimeout(t)
+        reject(err instanceof Error ? err : new Error(String(err)))
+      }
+    })()
+  })
 }
 
 export async function getListingById(listingId: string): Promise<Listing | null> {

@@ -53,6 +53,9 @@ export interface ExtractedProduct {
   // User-added fields on the confirmation screen
   target_audience?: string | null
   brand_voice?: string | null
+  /** When true, the confirmation form surfaces a prompt to enter name and details manually */
+  extraction_incomplete?: boolean
+  manual_entry_hint?: string | null
 }
 
 // ─── Generated Listings ───────────────────────────────────────────────────────
