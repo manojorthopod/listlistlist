@@ -414,7 +414,7 @@ function ReferralPrompt({ referralCode }: { referralCode: string | null }) {
         <div>
           <p className="text-sm font-medium text-text-primary">Know another seller?</p>
           <p className="text-xs text-text-secondary mt-0.5">
-            Share listlistlist and earn 10 free credits when they subscribe.
+            Share listlistlist and earn 20 free credits when they subscribe.
           </p>
         </div>
       </div>

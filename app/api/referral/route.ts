@@ -1,5 +1,5 @@
 import { auth } from '@clerk/nextjs/server'
-import { getReferralsByReferrer } from '@/lib/db'
+import { getReferralsByReferrer, REFERRAL_BONUS_CREDITS } from '@/lib/db'
 
 export async function GET() {
   const { userId } = await auth()
@@ -15,7 +15,7 @@ export async function GET() {
     const referrals = await getReferralsByReferrer(userId)
     const credited  = referrals.filter((r) => r.credits_awarded).length
     const pending   = referrals.filter((r) => !r.credits_awarded).length
-    const creditsEarned = credited * 10
+    const creditsEarned = credited * REFERRAL_BONUS_CREDITS
 
     return Response.json({
       referralCode,

@@ -422,7 +422,7 @@ export default function ListingResultTabs({
                 Your listings are ready!
               </p>
               <p className="text-xs text-text-secondary mt-0.5">
-                Know another seller who&apos;d love this? Share listlistlist and earn 10 free credits →
+                Know another seller who&apos;d love this? Share listlistlist and earn 20 free credits →
               </p>
             </div>
           </div>

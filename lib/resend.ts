@@ -203,7 +203,7 @@ export async function sendTrialExpiredEmail(
     </p>
     ${cta(`${APP_URL}/pricing`, 'Choose a plan →')}
     <p style="${ps};margin-top:20px;">
-      Not ready yet? Refer a friend and earn 10 free credits when they subscribe.<br/>
+      Not ready yet? Refer a friend and earn 20 free credits when they subscribe.<br/>
       Your referral link: <a href="${referralLink}" style="color:#7C3AED;text-decoration:none;">${referralLink}</a>
     </p>
   `

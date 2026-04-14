@@ -57,7 +57,7 @@ export default function ReferralWidget() {
         <div>
           <h3 className="text-base font-medium text-text-primary">Refer a seller</h3>
           <p className="text-xs text-text-secondary mt-0.5">
-            Earn 10 credits for every seller who subscribes using your link
+            Earn 20 credits for every seller who subscribes using your link
           </p>
         </div>
       </div>

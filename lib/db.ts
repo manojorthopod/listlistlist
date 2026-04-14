@@ -377,7 +377,7 @@ export async function getReferralForReferredUser(referredId: string): Promise<Re
 }
 
 /**
- * Atomically award 10 referral credits to the referrer, but only if the
+ * Atomically award 20 referral credits to the referrer, but only if the
  * referral row has not already been credited.
  *
  * The `.eq('credits_awarded', false)` condition acts as a compare-and-swap:
@@ -424,7 +424,7 @@ export async function awardReferralIfNotAwarded(
 
 // ─── Referral bonus constant ──────────────────────────────────────────────────
 // Exported so API routes and the Stripe webhook share the same value.
-export const REFERRAL_BONUS_CREDITS = 10
+export const REFERRAL_BONUS_CREDITS = 20
 
 // Email log
 
