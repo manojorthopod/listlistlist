@@ -16,6 +16,7 @@ import { TOPUP_PACKS, PLAN_ROLLOVER_CAP, type User } from '@/types'
 import CreditBadge from '@/components/credit-badge'
 import { TopupPackCard } from '@/components/topup-pack-card'
 import ReferralWidget from '@/components/referral-widget'
+import SignOutButton from '@/components/sign-out-button'
 
 import { TopupSuccessBanner }      from '@/app/account/topup-success-banner'
 import { ManageSubscriptionButton } from '@/app/account/manage-subscription-button'
@@ -283,6 +284,7 @@ export default async function AccountPage() {
             >
               Account
             </Link>
+            <SignOutButton />
             <CreditBadge />
           </div>
         </div>
@@ -376,6 +378,19 @@ export default async function AccountPage() {
               <ReferralWidget />
             </Section>
 
+          </div>
+        </div>
+
+        {/* ── Session actions ──────────────────────────────────────────────── */}
+        <div className="pt-2 border-t border-border">
+          <div className="bg-surface border border-border rounded-xl p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <p className="text-sm font-medium text-text-primary">Signed in as {user.email}</p>
+              <p className="text-xs text-text-secondary mt-1">
+                Sign out to end this session on this device.
+              </p>
+            </div>
+            <SignOutButton variant="primary" />
           </div>
         </div>
       </div>

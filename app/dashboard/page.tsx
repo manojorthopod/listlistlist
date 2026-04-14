@@ -8,6 +8,7 @@ import { PLAN_ROLLOVER_CAP } from '@/types'
 import { isValidReferralCode } from '@/lib/referral'
 import CreditBadge from '@/components/credit-badge'
 import ReferralWidget from '@/components/referral-widget'
+import SignOutButton from '@/components/sign-out-button'
 import ReferralRecorder from '@/app/dashboard/referral-recorder'
 import ListingsGrid from '@/app/dashboard/listings-grid'
 import type { User } from '@/types'
@@ -299,6 +300,7 @@ export default async function DashboardPage() {
             >
               Account
             </Link>
+            <SignOutButton />
             {/* Live credit badge — client component */}
             <CreditBadge />
           </div>
