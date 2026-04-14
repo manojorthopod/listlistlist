@@ -179,7 +179,7 @@ export default async function ListingDetailPage({
     const generatedListings = coerceGeneratedListings(
       (listing as unknown as { generated_content?: unknown }).generated_content ?? listing.generated_listings
     )
-    const extractedData = coerceObject(listing.extracted_data)
+    const extractedData = coerceObject(listing.extracted_data) as ExtractedProduct | null
 
     return (
       <div className="min-h-screen bg-base">
