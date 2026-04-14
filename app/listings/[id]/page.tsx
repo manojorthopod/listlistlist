@@ -1,12 +1,12 @@
 import { auth } from '@clerk/nextjs/server'
-import { notFound, redirect } from 'next/navigation'
+import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeftIcon, CalendarIcon, CoinsIcon } from 'lucide-react'
 import { getListingById, getUserById } from '@/lib/db'
-import { PLATFORM_META } from '@/components/platform-toggle-card'
+import { PLATFORM_META } from '@/lib/platforms'
 import CreditBadge from '@/components/credit-badge'
 import ListingViewer from '@/components/listing-viewer'
-import type { Platform } from '@/types'
+import type { ExtractedProduct, GeneratedListings, Platform } from '@/types'
 
 // ─── Metadata ─────────────────────────────────────────────────────────────────
 
@@ -15,21 +15,29 @@ export async function generateMetadata({
 }: {
   params: Promise<{ id: string }>
 }) {
-  // Always verify ownership before embedding any listing data in the <title>.
-  // Without this check, anyone who guesses a UUID could discover the product
-  // type of another user's listing from the HTML <title> tag.
-  const { userId } = await auth()
-  if (!userId) return { title: 'Listing — listlistlist' }
+  try {
+    // Always verify ownership before embedding any listing data in the <title>.
+    // Without this check, anyone who guesses a UUID could discover the product
+    // type of another user's listing from the HTML <title> tag.
+    const { userId } = await auth()
+    if (!userId) return { title: 'Listing — listlistlist' }
 
-  const { id } = await params
-  const listing = await getListingById(id)
+    const { id } = await params
+    const listing = await getListingById(id)
 
-  // Return a generic title for listings that don't belong to this user —
-  // treat forbidden the same as not-found to avoid information leakage.
-  if (!listing || listing.user_id !== userId) return { title: 'Listing — listlistlist' }
+    // Return a generic title for listings that don't belong to this user —
+    // treat forbidden the same as not-found to avoid information leakage.
+    if (!listing || listing.user_id !== userId) return { title: 'Listing — listlistlist' }
 
-  const product = listing.extracted_data?.product_type ?? 'Listing'
-  return { title: `${product} — listlistlist` }
+    const extractedData = coerceObject(listing.extracted_data) as ExtractedProduct | null
+    const product = typeof extractedData?.product_type === 'string'
+      ? extractedData.product_type
+      : 'Listing'
+    return { title: `${product} — listlistlist` }
+  } catch (error) {
+    console.error('[listings/[id]/page] metadata error:', error)
+    return { title: 'Listing — listlistlist' }
+  }
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -54,6 +62,69 @@ function StatusPill({ status }: { status: string }) {
   )
 }
 
+function ListingErrorState({
+  title,
+  message,
+}: {
+  title: string
+  message: string
+}) {
+  return (
+    <div className="rounded-xl border border-border bg-surface p-8 text-center space-y-3">
+      <h1 className="text-xl font-semibold text-text-primary">{title}</h1>
+      <p className="text-sm text-text-secondary">{message}</p>
+      <Link
+        href="/dashboard"
+        className="inline-flex items-center gap-1.5 text-sm text-accent hover:text-accent-light transition-colors"
+      >
+        <ArrowLeftIcon className="w-3.5 h-3.5" />
+        Back to dashboard
+      </Link>
+    </div>
+  )
+}
+
+function isPlatform(value: unknown): value is Platform {
+  return value === 'amazon'
+    || value === 'etsy'
+    || value === 'ebay'
+    || value === 'shopify'
+    || value === 'woocommerce'
+    || value === 'tiktok'
+}
+
+function coerceObject(value: unknown): Record<string, unknown> | null {
+  if (!value) return null
+  if (typeof value === 'object' && !Array.isArray(value)) return value as Record<string, unknown>
+  if (typeof value !== 'string') return null
+
+  try {
+    const parsed = JSON.parse(value) as unknown
+    return (parsed && typeof parsed === 'object' && !Array.isArray(parsed))
+      ? (parsed as Record<string, unknown>)
+      : null
+  } catch {
+    return null
+  }
+}
+
+function coercePlatforms(value: unknown): Platform[] {
+  if (Array.isArray(value)) return value.filter(isPlatform)
+  if (typeof value !== 'string') return []
+  try {
+    const parsed = JSON.parse(value) as unknown
+    return Array.isArray(parsed) ? parsed.filter(isPlatform) : []
+  } catch {
+    return []
+  }
+}
+
+function coerceGeneratedListings(value: unknown): GeneratedListings | null {
+  const fromGeneratedListings = coerceObject(value)
+  if (fromGeneratedListings) return fromGeneratedListings as GeneratedListings
+  return null
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default async function ListingDetailPage({
@@ -64,28 +135,54 @@ export default async function ListingDetailPage({
   const { userId } = await auth()
   if (!userId) redirect('/sign-in')
 
-  const { id } = await params
+  try {
+    const { id } = await params
 
-  const [listing, user] = await Promise.all([
-    getListingById(id),
-    getUserById(userId),
-  ])
+    const [listing, user] = await Promise.all([
+      getListingById(id),
+      getUserById(userId),
+    ])
 
-  if (!listing)                     notFound()
-  if (listing.user_id !== userId)   notFound()  // treat forbidden as not-found
-  if (!user)                        redirect('/sign-in')
+    if (!listing || listing.user_id !== userId) {
+      return (
+        <div className="min-h-screen bg-base">
+          <div className="max-w-4xl mx-auto px-6 py-12">
+            <ListingErrorState
+              title="Listing not found"
+              message="This listing does not exist, or you no longer have access to it."
+            />
+          </div>
+        </div>
+      )
+    }
 
-  const referralCode = userId.replace(/[^a-z0-9]/gi, '').slice(0, 12).toLowerCase()
-  const totalCredits = user.subscription_credits + user.topup_credits
-  const date = new Date(listing.created_at).toLocaleDateString('en-GB', {
-    day: 'numeric', month: 'long', year: 'numeric',
-  })
+    if (!user) {
+      return (
+        <div className="min-h-screen bg-base">
+          <div className="max-w-4xl mx-auto px-6 py-12">
+            <ListingErrorState
+              title="Account unavailable"
+              message="We could not load your account details. Sign in again and retry."
+            />
+          </div>
+        </div>
+      )
+    }
 
-  // Build the platform list — only platforms that were requested
-  const platforms = listing.platforms as Platform[]
+    const referralCode = userId.replace(/[^a-z0-9]/gi, '').slice(0, 12).toLowerCase()
+    const totalCredits = user.subscription_credits + user.topup_credits
+    const date = new Date(listing.created_at).toLocaleDateString('en-GB', {
+      day: 'numeric', month: 'long', year: 'numeric',
+    })
 
-  return (
-    <div className="min-h-screen bg-base">
+    const platforms = coercePlatforms(listing.platforms)
+    const generatedListings = coerceGeneratedListings(
+      (listing as unknown as { generated_content?: unknown }).generated_content ?? listing.generated_listings
+    )
+    const extractedData = coerceObject(listing.extracted_data)
+
+    return (
+      <div className="min-h-screen bg-base">
 
       {/* ── Navigation ───────────────────────────────────────────────────────── */}
       <nav className="border-b border-border bg-surface sticky top-0 z-40">
@@ -132,7 +229,7 @@ export default async function ListingDetailPage({
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={listing.image_url}
-                alt={listing.extracted_data?.product_type ?? 'Product'}
+                alt={(typeof extractedData?.product_type === 'string' ? extractedData.product_type : null) ?? 'Product'}
                 className="w-full h-full object-cover"
               />
             </div>
@@ -142,27 +239,27 @@ export default async function ListingDetailPage({
           <div className="flex-1 min-w-0 space-y-3">
             <div className="flex flex-wrap items-center gap-3">
               <h1 className="text-2xl font-medium tracking-tight text-text-primary">
-                {listing.extracted_data?.product_type ?? 'Product listing'}
+                {(typeof extractedData?.product_type === 'string' ? extractedData.product_type : null) ?? 'Product listing'}
               </h1>
               <StatusPill status={listing.status} />
             </div>
 
             {/* Extracted attributes */}
-            {listing.extracted_data && (
+            {extractedData && (
               <div className="flex flex-wrap gap-2">
-                {listing.extracted_data.material && (
+                {typeof extractedData.material === 'string' && extractedData.material.trim() && (
                   <span className="px-2 py-0.5 rounded bg-surface-2 border border-border text-xs text-text-secondary">
-                    {listing.extracted_data.material}
+                    {extractedData.material}
                   </span>
                 )}
-                {listing.extracted_data.color && (
+                {typeof extractedData.color === 'string' && extractedData.color.trim() && (
                   <span className="px-2 py-0.5 rounded bg-surface-2 border border-border text-xs text-text-secondary">
-                    {listing.extracted_data.color}
+                    {extractedData.color}
                   </span>
                 )}
-                {listing.extracted_data.condition && (
+                {typeof extractedData.condition === 'string' && extractedData.condition.trim() && (
                   <span className="px-2 py-0.5 rounded bg-surface-2 border border-border text-xs text-text-secondary">
-                    {listing.extracted_data.condition}
+                    {extractedData.condition}
                   </span>
                 )}
               </div>
@@ -197,13 +294,13 @@ export default async function ListingDetailPage({
         </div>
 
         {/* ── Listing content ─────────────────────────────────────────────── */}
-        {listing.generated_listings && platforms.length > 0 ? (
+        {generatedListings && platforms.length > 0 ? (
           <ListingViewer
             listingId={listing.id}
             imageUrl={listing.image_url}
-            extractedData={listing.extracted_data}
+            extractedData={extractedData}
             platforms={platforms}
-            initialListings={listing.generated_listings}
+            initialListings={generatedListings}
             referralCode={referralCode}
             totalCredits={totalCredits}
           />
@@ -228,5 +325,19 @@ export default async function ListingDetailPage({
 
       </div>
     </div>
-  )
+    )
+  } catch (error) {
+    console.error('[listings/[id]/page] render error:', error)
+
+    return (
+      <div className="min-h-screen bg-base">
+        <div className="max-w-4xl mx-auto px-6 py-12">
+          <ListingErrorState
+            title="Something went wrong"
+            message="We could not load this listing right now. Please try again in a moment."
+          />
+        </div>
+      </div>
+    )
+  }
 }

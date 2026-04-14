@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react'
 import Link from 'next/link'
 import { ZapIcon, AlertCircleIcon, CheckCircleIcon, ClockIcon } from 'lucide-react'
-import { PLATFORM_META } from '@/components/platform-toggle-card'
+import { PLATFORM_META } from '@/lib/platforms'
 import type { Listing, Platform, ListingStatus } from '@/types'
 
 // ─── Status badge ─────────────────────────────────────────────────────────────

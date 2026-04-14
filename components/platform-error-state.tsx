@@ -1,7 +1,7 @@
 'use client'
 
 import { AlertCircleIcon } from 'lucide-react'
-import { PLATFORM_META } from '@/components/platform-toggle-card'
+import { PLATFORM_META } from '@/lib/platforms'
 import type { Platform } from '@/types'
 
 interface PlatformErrorStateProps {

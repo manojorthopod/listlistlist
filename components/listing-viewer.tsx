@@ -4,7 +4,7 @@ import { useState, useCallback } from 'react'
 import { UsersIcon, ZapIcon, RefreshCwIcon } from 'lucide-react'
 import CopyButton from '@/components/copy-button'
 import PlatformErrorState from '@/components/platform-error-state'
-import { PLATFORM_META } from '@/components/platform-toggle-card'
+import { PLATFORM_META } from '@/lib/platforms'
 import type {
   Platform,
   GeneratedListings,
