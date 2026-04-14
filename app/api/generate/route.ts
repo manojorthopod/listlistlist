@@ -86,15 +86,16 @@ const BodySchema = z.object({
 async function generateForPlatform(
   platform:  Platform,
   extracted: ExtractedProduct,
-  imageUrl:  string
+  imageUrl:  string,
+  generationId: string
 ): Promise<{ platform: Platform; result: GeneratedListings[keyof GeneratedListings]; error?: string }> {
   try {
-    const userPrompt = buildPromptForPlatform(platform, extracted)
+    const userPrompt = buildPromptForPlatform(platform, extracted, generationId)
 
     const completion = await getProClient().chat.completions.create({
       model:       MODEL_PRO,
       max_tokens:  2000,
-      temperature: 0.7,
+      temperature: 0.9,
       messages:    buildImageMessages(GENERATION_SYSTEM_PROMPT, userPrompt, imageUrl),
     })
 
@@ -123,6 +124,10 @@ async function generateForPlatform(
       error:  `Generation failed for ${platform}: ${err instanceof Error ? err.message : 'Unknown error'}`,
     }
   }
+}
+
+function createGenerationId(): string {
+  return Math.random().toString(36).slice(2, 10)
 }
 
 // ─── Route handler ────────────────────────────────────────────────────────────
@@ -205,9 +210,10 @@ export async function POST(req: Request) {
   }
 
   // ── Parallel generation across all platforms ───────────────────────────────
+  const generationId = createGenerationId()
   const results = await Promise.all(
     (platforms as Platform[]).map((platform) =>
-      generateForPlatform(platform, extractedData as ExtractedProduct, imageUrl)
+      generateForPlatform(platform, extractedData as ExtractedProduct, imageUrl, generationId)
     )
   )
 

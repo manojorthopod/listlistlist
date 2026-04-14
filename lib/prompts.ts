@@ -10,6 +10,8 @@ export const PROMPT_VERSION = 'v1.0'
 
 export const GENERATION_SYSTEM_PROMPT = `You are an expert e-commerce copywriter specialising in platform-specific product listings. You write listings that rank well and convert browsers into buyers. Follow the exact structure and character limits specified. Return only valid JSON. Do not use markdown formatting in any field — all text must be plain and copy-paste ready.`
 
+const UNIQUENESS_INSTRUCTION = `Important: Generate completely original copy. Do not use generic phrases like 'perfect for', 'great condition', 'don't miss out'. Write as if this is the only listing of its kind. Vary sentence structure, lead with different angles (condition, use case, rarity, value), and avoid clichéd listing language.`
+
 // ─── Platform user prompts ────────────────────────────────────────────────────
 
 function dataBlock(extracted: ExtractedProduct): string {
@@ -20,8 +22,11 @@ function voiceLine(brandVoice: string | null | undefined): string {
   return brandVoice ? `Brand voice: ${brandVoice}` : 'Brand voice: professional and clear'
 }
 
-export function buildAmazonPrompt(extracted: ExtractedProduct): string {
+export function buildAmazonPrompt(extracted: ExtractedProduct, generationId: string): string {
   return `Create an Amazon product listing. Prioritise keyword-rich, factual language. No promotional claims (best, #1, amazing, etc.). Amazon uses AI detection to monitor listings — never fabricate specs, dimensions, or claims that cannot be verified from the product data provided.
+
+${UNIQUENESS_INSTRUCTION}
+Generation ID: ${generationId}
 
 Product data:
 ${dataBlock(extracted)}
@@ -42,8 +47,11 @@ Return ONLY valid JSON with no commentary:
 }`
 }
 
-export function buildEtsyPrompt(extracted: ExtractedProduct): string {
+export function buildEtsyPrompt(extracted: ExtractedProduct, generationId: string): string {
   return `Create an Etsy product listing. Etsy buyers respond to story, craft, and occasion. Lead with emotion and discovery.
+
+${UNIQUENESS_INSTRUCTION}
+Generation ID: ${generationId}
 
 Product data:
 ${dataBlock(extracted)}
@@ -57,8 +65,11 @@ Return ONLY valid JSON with no commentary:
 }`
 }
 
-export function buildEbayPrompt(extracted: ExtractedProduct): string {
+export function buildEbayPrompt(extracted: ExtractedProduct, generationId: string): string {
   return `Create an eBay product listing. eBay buyers are value-conscious and detail-oriented. Modern eBay search penalises keyword stuffing — write clean, factual listings. Do NOT use ALL CAPS or power words like RARE or FAST SHIPPING in titles.
+
+${UNIQUENESS_INSTRUCTION}
+Generation ID: ${generationId}
 
 Product data:
 ${dataBlock(extracted)}
@@ -80,8 +91,11 @@ Return ONLY valid JSON with no commentary:
 }`
 }
 
-export function buildShopifyPrompt(extracted: ExtractedProduct): string {
+export function buildShopifyPrompt(extracted: ExtractedProduct, generationId: string): string {
   return `Create a Shopify product listing for a brand-owned store. Optimise for brand voice and Google Shopping.
+
+${UNIQUENESS_INSTRUCTION}
+Generation ID: ${generationId}
 
 Product data:
 ${dataBlock(extracted)}
@@ -98,8 +112,11 @@ Return ONLY valid JSON with no commentary:
 }`
 }
 
-export function buildWooCommercePrompt(extracted: ExtractedProduct): string {
+export function buildWooCommercePrompt(extracted: ExtractedProduct, generationId: string): string {
   return `Create a WooCommerce product listing. Optimise for Yoast/Rank Math SEO. Balance keyword density with natural readability.
+
+${UNIQUENESS_INSTRUCTION}
+Generation ID: ${generationId}
 
 Product data:
 ${dataBlock(extracted)}
@@ -124,8 +141,11 @@ Return ONLY valid JSON with no commentary:
 }`
 }
 
-export function buildTikTokPrompt(extracted: ExtractedProduct): string {
+export function buildTikTokPrompt(extracted: ExtractedProduct, generationId: string): string {
   return `Create a TikTok Shop product listing. TikTok Shop is a high-growth marketplace with a completely different buyer psychology to all other platforms. Buyers discover products through short-form video content — listings must lead with scroll-stopping hooks, social proof language, and urgency. The writing style is punchy, conversational, and trend-aware. Titles should read like a video hook. Descriptions should feel like a creator talking directly to camera.
+
+${UNIQUENESS_INSTRUCTION}
+Generation ID: ${generationId}
 
 Product data:
 ${dataBlock(extracted)}
@@ -145,14 +165,15 @@ Return ONLY valid JSON with no commentary:
 
 export function buildPromptForPlatform(
   platform:  Platform,
-  extracted: ExtractedProduct
+  extracted: ExtractedProduct,
+  generationId: string
 ): string {
   switch (platform) {
-    case 'amazon':      return buildAmazonPrompt(extracted)
-    case 'etsy':        return buildEtsyPrompt(extracted)
-    case 'ebay':        return buildEbayPrompt(extracted)
-    case 'shopify':     return buildShopifyPrompt(extracted)
-    case 'woocommerce': return buildWooCommercePrompt(extracted)
-    case 'tiktok':      return buildTikTokPrompt(extracted)
+    case 'amazon':      return buildAmazonPrompt(extracted, generationId)
+    case 'etsy':        return buildEtsyPrompt(extracted, generationId)
+    case 'ebay':        return buildEbayPrompt(extracted, generationId)
+    case 'shopify':     return buildShopifyPrompt(extracted, generationId)
+    case 'woocommerce': return buildWooCommercePrompt(extracted, generationId)
+    case 'tiktok':      return buildTikTokPrompt(extracted, generationId)
   }
 }
