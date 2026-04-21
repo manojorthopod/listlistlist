@@ -11,7 +11,7 @@ import {
 } from 'lucide-react'
 
 import { getUserById, getTopupPurchasesByUser } from '@/lib/db'
-import { TOPUP_PACKS, PLAN_ROLLOVER_CAP, type User } from '@/types'
+import { TOPUP_PACKS, type User } from '@/types'
 
 import CreditBadge from '@/components/credit-badge'
 import { TopupPackCard } from '@/components/topup-pack-card'
@@ -55,11 +55,12 @@ function formatDate(iso: string | null): string {
 function PlanCard({ user }: { user: User }) {
   const daysLeft  = trialDaysRemaining(user)
   const urgent    = daysLeft !== null && daysLeft <= 2
+  const trialExpired = user.subscription_status === 'trial' && daysLeft === 0
   const isPaying  = user.subscription_status === 'starter' || user.subscription_status === 'pro'
 
   const statusColour: Record<User['subscription_status'], string> = {
     trial:     urgent
-      ? 'bg-warning-muted border-warning text-warning'
+      ? 'bg-[#FEF3C7] text-[#92400E]'
       : 'bg-accent-muted border-accent text-accent',
     starter:   'bg-surface-2 border-border-2 text-text-secondary',
     pro:       'bg-accent-muted border-accent text-accent',
@@ -81,7 +82,8 @@ function PlanCard({ user }: { user: User }) {
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div
           className={`
-            inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-semibold border
+            inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-semibold
+            ${trialExpired ? '' : 'border'}
             ${statusColour[user.subscription_status]}
           `}
         >
@@ -130,7 +132,7 @@ function PlanCard({ user }: { user: User }) {
             href="/pricing"
             className="
               inline-flex items-center gap-2
-              bg-accent hover:bg-accent-hover text-white font-medium
+              bg-[#1A1814] hover:bg-[#2D2A25] text-white font-medium
               rounded-lg px-4 py-2.5 text-sm
               transition-colors duration-150
             "
@@ -147,8 +149,14 @@ function PlanCard({ user }: { user: User }) {
 // ─── Credits card ─────────────────────────────────────────────────────────────
 
 function CreditsCard({ user }: { user: User }) {
-  const cap      = PLAN_ROLLOVER_CAP[user.subscription_status]
-  const fillPct  = cap > 0 ? Math.min(100, (user.subscription_credits / cap) * 100) : 0
+  const planAllowance = user.subscription_status === 'trial'
+    ? 10
+    : user.subscription_status === 'starter'
+      ? 50
+      : user.subscription_status === 'pro'
+        ? 1000
+        : 0
+  const fillPct  = planAllowance > 0 ? Math.min(100, (user.subscription_credits / planAllowance) * 100) : 0
   const total    = user.subscription_credits + user.topup_credits
   const isLow    = user.subscription_credits <= 5 && user.subscription_status !== 'cancelled'
 
@@ -178,8 +186,8 @@ function CreditsCard({ user }: { user: User }) {
           </span>
         </div>
 
-        {/* Progress bar vs rollover cap */}
-        {cap > 0 && (
+        {/* Progress bar vs plan allowance */}
+        {planAllowance > 0 && (
           <>
             <div className="h-1.5 rounded-full bg-surface-2 overflow-hidden">
               <div
@@ -188,8 +196,8 @@ function CreditsCard({ user }: { user: User }) {
               />
             </div>
             <div className="flex items-center justify-between text-xs text-text-disabled">
-              <span>{user.subscription_credits} used</span>
-              <span>{cap} max (rollover cap)</span>
+              <span>{user.subscription_credits} remaining</span>
+              <span>{planAllowance} monthly allowance</span>
             </div>
           </>
         )}

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { CoinsIcon } from 'lucide-react'
+import { CoinsIcon, ZapIcon } from 'lucide-react'
 import type { TopupPack } from '@/types'
 
 interface TopupPackCardProps {
@@ -11,6 +11,11 @@ interface TopupPackCardProps {
 
 export function TopupPackCard({ pack, isAuthenticated }: TopupPackCardProps) {
   const [loading, setLoading] = useState(false)
+  const ctaLabel = pack.id === 'starter_pack'
+    ? 'Buy Starter'
+    : pack.id === 'growth_pack'
+      ? 'Buy Growth'
+      : 'Buy Scale'
 
   async function handlePurchase() {
     if (!isAuthenticated) { window.location.href = '/sign-up'; return }
@@ -38,7 +43,11 @@ export function TopupPackCard({ pack, isAuthenticated }: TopupPackCardProps) {
           </p>
         </div>
         <div className="w-9 h-9 rounded-lg bg-accent-light flex items-center justify-center">
-          <CoinsIcon className="w-4 h-4 text-accent" />
+          {pack.id === 'scale_pack' ? (
+            <ZapIcon className="w-4 h-4 text-accent" />
+          ) : (
+            <CoinsIcon className="w-4 h-4 text-accent" />
+          )}
         </div>
       </div>
 
@@ -54,9 +63,9 @@ export function TopupPackCard({ pack, isAuthenticated }: TopupPackCardProps) {
       <button
         onClick={handlePurchase}
         disabled={loading}
-        className="w-full bg-[#1A1814] hover:bg-[#2D2A25] text-white font-medium rounded-lg px-5 py-2.5 transition-colors duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
+        className="w-full bg-[#1A1814] hover:bg-[#2D2A25] text-white text-sm font-medium rounded-lg px-4 py-2.5 whitespace-nowrap transition-colors duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
       >
-        {loading ? 'Redirecting…' : `Buy ${pack.name}`}
+        {loading ? 'Redirecting…' : ctaLabel}
       </button>
     </div>
   )
