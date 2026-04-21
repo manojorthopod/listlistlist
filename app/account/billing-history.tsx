@@ -1,13 +1,7 @@
-import type { TopupPurchase } from '@/types'
+import type { CreditPurchase } from '@/types'
 
 interface Props {
-  purchases: TopupPurchase[]
-}
-
-const PACK_LABELS: Record<string, string> = {
-  starter_pack: 'Starter pack (100 credits)',
-  growth_pack:  'Growth pack (300 credits)',
-  scale_pack:   'Scale pack (700 credits)',
+  purchases: CreditPurchase[]
 }
 
 function formatDate(iso: string): string {
@@ -20,6 +14,12 @@ function formatDate(iso: string): string {
 
 function formatGbp(pence: number): string {
   return `£${(pence / 100).toFixed(2)}`
+}
+
+function formatReference(pi: string | null): string {
+  if (!pi) return '—'
+  const tail = pi.slice(-8)
+  return `…${tail}`
 }
 
 export function BillingHistory({ purchases }: Props) {
@@ -40,7 +40,13 @@ export function BillingHistory({ purchases }: Props) {
               Date
             </th>
             <th className="text-left text-xs uppercase tracking-widest text-text-secondary pb-2 pr-4 font-medium">
-              Pack
+              Type
+            </th>
+            <th className="text-left text-xs uppercase tracking-widest text-text-secondary pb-2 pr-4 font-medium">
+              Reference
+            </th>
+            <th className="text-right text-xs uppercase tracking-widest text-text-secondary pb-2 pr-4 font-medium">
+              Credits
             </th>
             <th className="text-right text-xs uppercase tracking-widest text-text-secondary pb-2 font-medium">
               Amount
@@ -54,10 +60,16 @@ export function BillingHistory({ purchases }: Props) {
                 {formatDate(p.created_at)}
               </td>
               <td className="py-3 pr-4 text-text-primary">
-                {PACK_LABELS[p.pack_name] ?? p.pack_name}
+                {p.type === 'subscription' ? 'Subscription' : 'Top-up'}
+              </td>
+              <td className="py-3 pr-4 text-text-secondary text-xs font-mono whitespace-nowrap">
+                {formatReference(p.stripe_payment_intent_id)}
+              </td>
+              <td className="py-3 pr-4 text-right font-mono text-text-primary whitespace-nowrap">
+                +{p.credits}
               </td>
               <td className="py-3 text-right font-mono text-text-primary whitespace-nowrap">
-                {formatGbp(p.amount_paid)}
+                {formatGbp(p.amount)}
               </td>
             </tr>
           ))}

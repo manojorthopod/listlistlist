@@ -12,6 +12,7 @@ import {
   db,
   updateUser,
   createTopupPurchase,
+  createCreditPurchase,
   applyMonthlyRollover,
   getReferralForReferredUser,
   awardReferralIfNotAwarded,
@@ -125,6 +126,19 @@ export async function POST(req: Request) {
               : null,
           })
 
+          const paymentIntentId =
+            typeof session.payment_intent === 'string'
+              ? session.payment_intent
+              : (session.payment_intent as Stripe.PaymentIntent | null)?.id ?? null
+
+          await createCreditPurchase({
+            user_id: userId,
+            amount: session.amount_total ?? 0,
+            credits: PLAN_CREDITS[plan],
+            type: 'subscription',
+            stripe_payment_intent_id: paymentIntentId,
+          })
+
           console.log(`[stripe webhook] Activated ${plan} (${interval}) for user ${userId}`)
 
           // ── Referral credit award ────────────────────────────────────────
@@ -210,6 +224,14 @@ export async function POST(req: Request) {
             pack_name:                packId,
             credits_purchased:        credits,
             amount_paid:              session.amount_total ?? 0,
+          })
+
+          await createCreditPurchase({
+            user_id: userId,
+            amount: session.amount_total ?? 0,
+            credits,
+            type: 'topup',
+            stripe_payment_intent_id: paymentIntentId || null,
           })
 
           console.log(

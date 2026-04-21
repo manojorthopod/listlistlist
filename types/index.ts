@@ -191,6 +191,20 @@ export interface TopupPurchase {
   created_at: string
 }
 
+// ─── Credit Purchase History (DB row) ────────────────────────────────────────
+
+export type CreditPurchaseType = 'subscription' | 'topup'
+
+export interface CreditPurchase {
+  id: string
+  user_id: string
+  amount: number
+  credits: number
+  type: CreditPurchaseType
+  stripe_payment_intent_id: string | null
+  created_at: string
+}
+
 // ─── Referral (DB row) ────────────────────────────────────────────────────────
 
 export interface Referral {

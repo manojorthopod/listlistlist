@@ -10,7 +10,7 @@ import {
   SlidersHorizontalIcon,
 } from 'lucide-react'
 
-import { getUserById, getTopupPurchasesByUser } from '@/lib/db'
+import { getUserById, getCreditPurchasesByUser } from '@/lib/db'
 import { TOPUP_PACKS, type User } from '@/types'
 
 import CreditBadge from '@/components/credit-badge'
@@ -265,7 +265,7 @@ export default async function AccountPage() {
 
   const [user, purchases] = await Promise.all([
     getUserById(userId),
-    getTopupPurchasesByUser(userId),
+    getCreditPurchasesByUser(userId),
   ])
 
   if (!user) redirect('/sign-in')

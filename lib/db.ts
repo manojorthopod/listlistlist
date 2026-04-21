@@ -3,6 +3,7 @@ import type {
   User,
   Listing,
   TopupPurchase,
+  CreditPurchase,
   Referral,
   EmailLog,
 } from '@/types'
@@ -309,6 +310,32 @@ export async function getTopupPurchasesByUser(userId: string): Promise<TopupPurc
 
   if (error) throw new Error(`Failed to fetch topup purchases: ${error.message}`)
   return (data ?? []) as TopupPurchase[]
+}
+
+export async function createCreditPurchase(
+  purchase: Omit<CreditPurchase, 'id' | 'created_at'>
+): Promise<CreditPurchase> {
+  const { data, error } = await db
+    .from('credit_purchases')
+    .insert(purchase)
+    .select()
+    .single()
+
+  if (error || !data) {
+    throw new Error(`Failed to create credit purchase: ${error?.message}`)
+  }
+  return data as CreditPurchase
+}
+
+export async function getCreditPurchasesByUser(userId: string): Promise<CreditPurchase[]> {
+  const { data, error } = await db
+    .from('credit_purchases')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+
+  if (error) throw new Error(`Failed to fetch credit purchases: ${error.message}`)
+  return (data ?? []) as CreditPurchase[]
 }
 
 // Referrals
