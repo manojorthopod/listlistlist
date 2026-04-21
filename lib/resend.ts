@@ -8,7 +8,7 @@ function getResendClient() {
 
 export const resend = getResendClient()
 
-const FROM_ADDRESS = 'listlistlist <hello@listlistlist.co>'
+const FROM_ADDRESS = 'listlistlist <hello@listlistlist.io>'
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://listlistlist.co'
 
 // ─── Shared email shell ───────────────────────────────────────────────────────
